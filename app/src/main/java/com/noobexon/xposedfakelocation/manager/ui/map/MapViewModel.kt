@@ -99,9 +99,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(isPlaying = currentIsPlaying) }
         
         viewModelScope.launch {
+            // fix: keep current location after fakelocation stops(fixes issue #4)
+            /*
             if (!currentIsPlaying) {
                 updateClickedLocation(null)
             }
+            */
             preferencesRepository.saveIsPlaying(currentIsPlaying)
         }
     }
