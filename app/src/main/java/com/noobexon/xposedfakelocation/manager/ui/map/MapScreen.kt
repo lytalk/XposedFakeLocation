@@ -131,7 +131,6 @@ fun MapScreen(
                                 onClick = {
                                     showOptionsMenu = false
                                     mapViewModel.updateClickedLocation(null)
-                                    Toast.makeText(context, "Location Cleared", Toast.LENGTH_SHORT).show()
                                 },
                                 enabled = isFabClickable // allow clearing only when a location is marked.
                             )
