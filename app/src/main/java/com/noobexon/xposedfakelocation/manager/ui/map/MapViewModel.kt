@@ -99,9 +99,6 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(isPlaying = currentIsPlaying) }
         
         viewModelScope.launch {
-            if (!currentIsPlaying) {
-                updateClickedLocation(null)
-            }
             preferencesRepository.saveIsPlaying(currentIsPlaying)
         }
     }

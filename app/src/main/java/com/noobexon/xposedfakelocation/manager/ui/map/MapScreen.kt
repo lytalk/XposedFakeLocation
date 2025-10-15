@@ -124,6 +124,16 @@ fun MapScreen(
                                     navController.navigate(Screen.Favorites.route)
                                 }
                             )
+                            // add clear location feature
+                            DropdownMenuItem(
+                                leadingIcon = { Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear Location") },
+                                text = { Text("Clear Location") },
+                                onClick = {
+                                    showOptionsMenu = false
+                                    mapViewModel.updateClickedLocation(null)
+                                },
+                                enabled = isFabClickable // allow clearing only when a location is marked.
+                            )
                         }
                     }
                 )
