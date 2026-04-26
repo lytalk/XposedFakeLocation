@@ -4,6 +4,7 @@ package com.noobexon.xposedfakelocation.xposed.utils
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
+import android.os.SystemClock
 import com.noobexon.xposedfakelocation.data.DEFAULT_ACCURACY
 import com.noobexon.xposedfakelocation.data.DEFAULT_ALTITUDE
 import com.noobexon.xposedfakelocation.data.DEFAULT_MEAN_SEA_LEVEL
@@ -40,11 +41,22 @@ object LocationUtil {
     var speed: Float = 0F
     var speedAccuracy: Float = 0F
 
+    fun isSpoofingEnabled(): Boolean {
+        return PreferencesUtil.getIsPlaying() == true && PreferencesUtil.getLastClickedLocation() != null
+    }
+
+    fun shouldSpoofPackage(packageName: String?): Boolean {
+        return PreferencesUtil.shouldSpoofPackage(packageName)
+    }
+
     @Synchronized
     fun createFakeLocation(originalLocation: Location? = null, provider: String = LocationManager.GPS_PROVIDER): Location {
+        updateLocation()
+
         val fakeLocation = if (originalLocation == null) {
             Location(provider).apply {
                 time = System.currentTimeMillis() - 300
+                elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
             }
         } else {
             Location(originalLocation.provider).apply {
@@ -107,6 +119,16 @@ object LocationUtil {
     @Synchronized
     fun updateLocation() {
         try {
+            latitude = 0.0
+            longitude = 0.0
+            accuracy = 0F
+            altitude = 0.0
+            verticalAccuracy = 0F
+            meanSeaLevel = 0.0
+            meanSeaLevelAccuracy = 0F
+            speed = 0F
+            speedAccuracy = 0F
+
             PreferencesUtil.getLastClickedLocation()?.let {
                 if (PreferencesUtil.getUseRandomize() == true) {
                     val randomizationRadius = PreferencesUtil.getRandomizeRadius() ?: DEFAULT_RANDOMIZE_RADIUS

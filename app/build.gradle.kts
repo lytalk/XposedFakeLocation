@@ -12,8 +12,8 @@ android {
         applicationId = "com.noobexon.xposedfakelocation"
         minSdk = 30
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.0.3"
+        versionCode = 7
+        versionName = "0.0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,6 +38,10 @@ android {
         compose = true
         buildConfig = true
     }
+}
+
+tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:-options")
 }
 
 dependencies {

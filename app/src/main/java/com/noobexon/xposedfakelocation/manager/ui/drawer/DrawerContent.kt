@@ -83,6 +83,16 @@ fun DrawerContent(
                 },
                 isSelected = navController.currentDestination?.route == Screen.Favorites.route
             )
+
+            DrawerItem(
+                icon = LineAwesomeIcons.MobileAltSolid,
+                label = "Target Apps",
+                onClick = {
+                    navController.navigate(Screen.TargetApps.route)
+                    onCloseDrawer()
+                },
+                isSelected = navController.currentDestination?.route == Screen.TargetApps.route
+            )
             
             DrawerItem(
                 icon = Icons.Default.Settings,

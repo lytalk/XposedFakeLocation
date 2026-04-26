@@ -2,6 +2,7 @@
 package com.noobexon.xposedfakelocation.xposed.utils
 
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.noobexon.xposedfakelocation.data.*
 import com.noobexon.xposedfakelocation.data.model.LastClickedLocation
 import de.robv.android.xposed.XSharedPreferences
@@ -85,6 +86,26 @@ object PreferencesUtil {
 
     fun getSpeedAccuracy(): Float? {
         return getPreference<Float>(KEY_SPEED_ACCURACY)
+    }
+
+    fun getTargetApps(): Set<String> {
+        preferences.reload()
+        val json = preferences.getString(KEY_TARGET_APPS, null) ?: return emptySet()
+        return try {
+            val type = object : TypeToken<List<String>>() {}.type
+            Gson().fromJson<List<String>>(json, type).toSet()
+        } catch (e: Exception) {
+            XposedBridge.log("$TAG Error parsing target apps JSON: ${e.message}")
+            emptySet()
+        }
+    }
+
+    fun shouldSpoofPackage(packageName: String?): Boolean {
+        if (packageName.isNullOrBlank() || packageName == MANAGER_APP_PACKAGE_NAME) return false
+        if (getIsPlaying() != true || getLastClickedLocation() == null) return false
+
+        val targetApps = getTargetApps()
+        return targetApps.contains(packageName)
     }
 
     private inline fun <reified T> getPreference(key: String): T? {

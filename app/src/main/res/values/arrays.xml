@@ -1,5 +1,5 @@
 <resources>
     <string-array name="xposedscope" >
-        <item>com.noobexon.xposedfakelocation</item>
+        <item>android</item>
     </string-array>
 </resources>
