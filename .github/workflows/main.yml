@@ -4,10 +4,10 @@ name: Android CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [ opt_location ]
     tags: ["v*"]
   pull_request:
-    branches: [main, master]
+    branches: [opt_location ]
   workflow_dispatch:
 
 permissions:
