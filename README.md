@@ -403,3 +403,4 @@ This application is intended for development, testing, and privacy research. Mis
 - [Jetpack Compose](https://developer.android.com/jetpack/compose)
 - [Material Design 3](https://m3.material.io/)
 - [Line Awesome Icons](https://icons8.com/line-awesome)
+- [Fucklocation](https://github.com/Mikotwa/FuckLocation)
