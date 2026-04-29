@@ -71,7 +71,7 @@ fun TargetAppsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Only apps selected here will receive the spoofed location. In LSPosed, select the system framework only.",
+                text = "Only apps selected here will receive the spoofed location. In LSPosed, select only the system framework and phone services.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

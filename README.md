@@ -37,12 +37,12 @@
 
 ## Current Version
 
-- Version name: `0.0.7`
-- Version code: `7`
+- Version name: `1.0.0`
+- Version code: `8`
 - Primary tested device: Redmi K40
 - Primary tested ROM: MIUI 13.0.7.0
 - Primary tested Android version: Android 12
-- Recommended LSPosed scope: `android` system framework only
+- Recommended LSPosed scope: `android` system framework and `com.android.phone`
 
 See `RELEASEINFO.md` for the release summary.
 
@@ -78,7 +78,7 @@ Recommended test environment:
 
 Important:
 
-- This version is designed so that LSPosed only needs the `android` system framework scope.
+- This version is designed so that LSPosed only needs the `android` system framework and `com.android.phone` scopes.
 - Target apps are selected inside XposedFakeLocation, not in LSPosed.
 - After changing LSPosed scope, reboot the phone.
 
@@ -95,12 +95,13 @@ Important:
 
    ```text
    Android System Framework (android)
+   Phone Services (com.android.phone)
    ```
 
 7. Reboot the phone.
 8. Open XposedFakeLocation and complete the in-app setup.
 
-Do not select target apps in LSPosed for the normal `0.0.7` flow. Use the app's `Target Apps` page instead.
+Do not select target apps in LSPosed for the normal `1.0.0` flow. Use the app's `Target Apps` page instead.
 
 ---
 
@@ -112,7 +113,7 @@ In LSPosed:
 
 1. Enable `XposedFakeLocation`.
 2. Enter module scope settings.
-3. Select `Android System Framework (android)` only.
+3. Select `Android System Framework (android)` and `Phone Services (com.android.phone)` only.
 4. Reboot the phone.
 
 If you previously selected many target apps in LSPosed, remove them from the LSPosed scope. The new flow is controlled by the app itself.
@@ -153,16 +154,16 @@ Only checked apps receive spoofed location data. Unchecked apps continue to rece
 
 ## LSPosed Scope Setup
 
-Correct scope for version `0.0.7`:
+Correct scope for version `1.0.0`:
 
 ```text
 android
+com.android.phone
 ```
 
 Do not normally select:
 
 ```text
-com.android.phone
 target app package names
 ```
 
@@ -255,7 +256,7 @@ Recommended starting point:
 
 For Redmi K40 on MIUI 13.0.7.0 / Android 12:
 
-- Use LSPosed scope `android` only.
+- Use LSPosed scope `android` and `com.android.phone` only.
 - Reboot after enabling the module.
 - Select target apps inside `Target Apps`.
 - Force stop target apps after changing target selection.
@@ -280,7 +281,7 @@ Expected hook areas:
 Check:
 
 1. LSPosed module is enabled.
-2. Scope contains `android`.
+2. Scope contains `android` and `com.android.phone`.
 3. Phone has been rebooted after enabling/changing scope.
 4. Target app is selected in `Target Apps`.
 5. A fake location is selected on the map.
@@ -301,7 +302,7 @@ Try:
 
 Check that only intended apps are selected in `Target Apps`.
 
-If you selected target apps in LSPosed directly, remove them from LSPosed scope and keep only `android`.
+If you selected target apps in LSPosed directly, remove them from LSPosed scope and keep only `android` and `com.android.phone`.
 
 ### Target app detects abnormal location
 

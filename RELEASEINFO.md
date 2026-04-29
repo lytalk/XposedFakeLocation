@@ -1,11 +1,11 @@
-# XposedFakeLocation 0.0.7 Release Info
+# XposedFakeLocation 1.0.0 Release Info
 
 ## Version
 
-- Version name: `0.0.7`
-- Version code: `7`
+- Version name: `1.0.0`
+- Version code: `8`
 - Target device focus: Redmi K40, MIUI 13.0.7.0, Android 12
-- LSPosed scope model: select `android` system framework only
+- LSPosed scope model: select `android` system framework and `com.android.phone`
 
 ## Highlights
 
@@ -18,7 +18,7 @@
 ## New User Flow
 
 1. Enable the module in LSPosed.
-2. Select only `Android System Framework (android)` as the LSPosed scope.
+2. Select only `Android System Framework (android)` and `Phone Services (com.android.phone)` as the LSPosed scope.
 3. Reboot the phone.
 4. Open XposedFakeLocation.
 5. Open `Target Apps` from the drawer and select apps that should receive spoofed locations.
@@ -28,7 +28,7 @@
 ## Xposed / System Hook Changes
 
 - `MainHook` now installs system hooks in the `android` process.
-- LSPosed default scope is reduced to `android`.
+- LSPosed default scope is reduced to `android` and `com.android.phone`.
 - App-layer hooks now check the in-app target app list before changing any values.
 - System hooks now try to resolve the caller package and spoof only selected target apps.
 
@@ -76,4 +76,4 @@ BUILD SUCCESSFUL
 
 - Some Kotlin deprecation warnings remain from existing APIs such as `MODE_WORLD_READABLE`, `NeighboringCellInfo`, and older Compose icons.
 - These warnings do not block packaging.
-- Phone-process cell hooks remain available in code, but the default LSPosed scope is now `android` only.
+- Phone-process cell hooks are included in the default LSPosed scope via `com.android.phone`.
