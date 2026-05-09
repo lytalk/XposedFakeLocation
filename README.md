@@ -38,6 +38,7 @@
 - **Custom Coordinates**: Set precise latitude and longitude.
 - **Altitude and Accuracy Settings**: Customize altitude, accuracy and other custom sensor values.
 - **Randomization**: Add random offsets within a specified radius for enhanced privacy.
+- **In-App Target Selection**: Choose which apps should receive spoofed locations directly inside XposedFakeLocation.
 - **User-Friendly Interface**: Modern Material Design 3 UI built with Jetpack Compose.
 - **Intuitive Navigation**: Easy access to maps, favorite locations, and settings.
 - **Community Integration**: Direct links to Telegram, Discord, and GitHub communities.
@@ -85,7 +86,9 @@ You can always install the latest stable version from the releases page. If you 
 
    - Open **Xposed Installer** or **LSPosed Manager**.
    - Enable the **XposedFakeLocation** module.
-   - If you decide to apply the module system wide, Reboot your device to apply changes.
+   - In LSPosed scope settings, select **Android System Framework (`android`)** and **Phone Services (`com.android.phone`)**.
+   - Reboot your device to apply the scope change.
+   - Select target apps inside XposedFakeLocation instead of selecting each target app in LSPosed.
 
 ---
 
@@ -101,14 +104,21 @@ You can always install the latest stable version from the releases page. If you 
      - **Map**: Primary interface for location selection
      - **Favorites**: Saved locations for quick access
      - **Settings**: Configure application behavior
+     - **Target Apps**: Apps that should receive spoofed locations
      - **About**: View application information
 
-3. **Select a Location**
+3. **Select Target Apps**
+
+   - Open **Target Apps** from the navigation drawer.
+   - Search for and select the apps that should receive spoofed locations.
+   - Apps not selected here should keep receiving their normal location.
+
+4. **Select a Location**
 
    - Use the integrated map to select your desired location.
    - Tap on the map to set the fake location.
 
-4. **Configure Settings**
+5. **Configure Settings**
 
    - Access the **Settings** screen to customize:
 
@@ -117,12 +127,13 @@ You can always install the latest stable version from the releases page. If you 
      - **Other Sensor Data**: New spoofable sensors data added in new versions.
      - **Randomization Radius**: Set the radius in meters for location randomization.
 
-5. **Start Spoofing**
+6. **Start Spoofing**
 
    - Toggle the **Start** button to begin location spoofing.
-   - The app will now override your device's location data based on the target(s) specified in the Xposed manager app.
+   - The app will override location data only for apps selected in **Target Apps**.
+   - Force stop and reopen the target app if it was already running.
 
-6. **Stop Spoofing**
+7. **Stop Spoofing**
 
    - Toggle the **Stop** button to cease location spoofing.
 
@@ -204,5 +215,6 @@ This application is intended for **development and testing purposes only**. Misu
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) - Modern UI toolkit for Android.
 - [Material Design 3](https://m3.material.io/) - Latest design system from Google.
 - [Line Awesome Icons](https://icons8.com/line-awesome) - Beautiful icon set used in the app.
+- [FuckLocation](https://github.com/Mikotwa/FuckLocation) - Reference for additional Android location hook handling.
 
 

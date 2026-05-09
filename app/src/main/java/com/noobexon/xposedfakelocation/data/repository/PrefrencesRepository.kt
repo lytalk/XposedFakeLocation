@@ -56,6 +56,7 @@ class PreferencesRepository(private val context: Context) {
         val USE_SPEED_ACCURACY = booleanPreferencesKey(KEY_USE_SPEED_ACCURACY)
         val SPEED_ACCURACY = floatPreferencesKey(KEY_SPEED_ACCURACY)
         val FAVORITES = stringPreferencesKey(KEY_FAVORITES)
+        val TARGET_APPS = stringPreferencesKey(KEY_TARGET_APPS)
     }
 
     // Generic helper for DataStore flows with error handling
@@ -349,6 +350,45 @@ class PreferencesRepository(private val context: Context) {
             }
         } else {
             emptyList()
+        }
+    }
+
+    fun getTargetAppsFlow(): Flow<Set<String>> {
+        return context.dataStore.data
+            .catch { exception ->
+                if (exception is IOException) {
+                    Log.e(tag, "Error reading target apps: ${exception.message}")
+                    emit(emptyPreferences())
+                } else {
+                    throw exception
+                }
+            }
+            .map { preferences ->
+                parseTargetApps(preferences[PreferenceKeys.TARGET_APPS])
+            }
+    }
+
+    suspend fun saveTargetApps(packageNames: Set<String>) {
+        val normalized = packageNames
+            .filter { it.isNotBlank() }
+            .distinct()
+            .sorted()
+        val json = gson.toJson(normalized)
+        savePreference(PreferenceKeys.TARGET_APPS, json, KEY_TARGET_APPS, json)
+    }
+
+    fun getTargetApps(): Set<String> {
+        return parseTargetApps(sharedPrefs.getString(KEY_TARGET_APPS, null))
+    }
+
+    private fun parseTargetApps(json: String?): Set<String> {
+        if (json.isNullOrBlank()) return emptySet()
+        return try {
+            val type = object : TypeToken<List<String>>() {}.type
+            gson.fromJson<List<String>>(json, type).toSet()
+        } catch (e: JsonSyntaxException) {
+            Log.e(tag, "Error parsing target apps: ${e.message}")
+            emptySet()
         }
     }
 

@@ -10,6 +10,7 @@ import com.noobexon.xposedfakelocation.manager.ui.map.MapScreen
 import com.noobexon.xposedfakelocation.manager.ui.map.MapViewModel
 import com.noobexon.xposedfakelocation.manager.ui.permissions.PermissionsScreen
 import com.noobexon.xposedfakelocation.manager.ui.settings.SettingsScreen
+import com.noobexon.xposedfakelocation.manager.ui.targetapps.TargetAppsScreen
 
 @Composable
 fun AppNavGraph(
@@ -35,6 +36,9 @@ fun AppNavGraph(
         }
         composable(route = Screen.Settings.route) {
             SettingsScreen(navController = navController)
+        }
+        composable(route = Screen.TargetApps.route) {
+            TargetAppsScreen(navController = navController)
         }
     }
 }
