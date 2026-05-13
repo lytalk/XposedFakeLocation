@@ -3,8 +3,6 @@ package com.noobexon.xposedfakelocation.manager.control
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Process
 import android.util.Log
 import com.noobexon.xposedfakelocation.data.repository.PreferencesRepository
 import kotlinx.coroutines.CoroutineScope
@@ -15,8 +13,6 @@ class ControlReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG = "ControlReceiver"
-
-        const val PERMISSION_CONTROL = "com.noobexon.xposedfakelocation.permission.CONTROL"
 
         const val ACTION_START = "com.noobexon.xposedfakelocation.action.START"
         const val ACTION_STOP = "com.noobexon.xposedfakelocation.action.STOP"
@@ -29,11 +25,6 @@ class ControlReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (!isCallerAuthorized(context)) {
-            Log.w(TAG, "Rejected intent ${intent.action}: caller not authorized")
-            return
-        }
-
         val action = intent.action ?: return
         val pendingResult = goAsync()
         val appContext = context.applicationContext
@@ -53,20 +44,6 @@ class ControlReceiver : BroadcastReceiver() {
                 pendingResult.finish()
             }
         }
-    }
-
-    private fun isCallerAuthorized(context: Context): Boolean {
-        val myUid = Process.myUid()
-        val callingUid = sentFromUidOrNoOp()
-        if (callingUid == myUid) return true
-        val granted = context.checkCallingOrSelfPermission(PERMISSION_CONTROL)
-        return granted == PackageManager.PERMISSION_GRANTED
-    }
-
-    private fun sentFromUidOrNoOp(): Int = try {
-        android.os.Binder.getCallingUid()
-    } catch (e: Throwable) {
-        -1
     }
 
     private suspend fun handleStart(intent: Intent, repository: PreferencesRepository) {

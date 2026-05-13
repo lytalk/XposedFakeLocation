@@ -1,18 +1,12 @@
 # External Intent Control
 
-XposedFakeLocation exposes a `BroadcastReceiver` that lets another app on the device control faking headlessly — start it, stop it, and update the fake coordinates — without opening the XposedFakeLocation UI.
+XposedFakeLocation exposes a `BroadcastReceiver` that lets any app on the device — or `adb shell` — control faking headlessly: start it, stop it, and update the fake coordinates without opening the XposedFakeLocation UI.
 
 ## Security model
 
-The receiver is guarded by a custom permission:
+**None.** The receiver is exported with no permission check. Any app installed on the device, and `adb shell`, can send these broadcasts. This is intentional so that third-party apps signed with a different key (and ADB) can drive the module.
 
-```
-com.noobexon.xposedfakelocation.permission.CONTROL
-```
-
-It is declared with `android:protectionLevel="signature"`, meaning **only apps signed with the same signing key** as XposedFakeLocation are granted the permission and can deliver intents to the receiver. As a fallback, requests from the same UID (the manager app itself) are also accepted.
-
-If you want a third-party app that is signed with a different key to control XposedFakeLocation, rebuild XposedFakeLocation with the permission's `protectionLevel` changed (for example to `signature|privileged` or remove the protection level), and have the calling app declare `<uses-permission android:name="com.noobexon.xposedfakelocation.permission.CONTROL" />`.
+If you want to lock this down later, re-introduce a custom `<permission>` in the manifest and an authorization check in `ControlReceiver.onReceive`.
 
 ## Actions and extras
 
@@ -56,8 +50,6 @@ adb shell am broadcast \
   -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver
 ```
 
-Note: `adb shell am broadcast` runs from the `shell` UID, which does not hold the signature permission. To bypass the permission check during testing, either temporarily relax `protectionLevel` in the manifest, or add `--receiver-permission com.noobexon.xposedfakelocation.permission.CONTROL` only after granting it (not possible for signature-level). For real testing, send the broadcast from a co-signed app (see Kotlin snippet below).
-
 ## Caller snippet (Kotlin)
 
 ```kotlin
@@ -67,7 +59,6 @@ import android.content.Intent
 object FakeLocationControl {
     private const val PKG = "com.noobexon.xposedfakelocation"
     private const val RECEIVER = "$PKG.manager.control.ControlReceiver"
-    private const val PERMISSION = "$PKG.permission.CONTROL"
 
     fun start(context: Context, lat: Double? = null, lon: Double? = null) {
         val intent = Intent("$PKG.action.START").apply {
@@ -77,14 +68,14 @@ object FakeLocationControl {
                 putExtra("longitude", lon)
             }
         }
-        context.sendBroadcast(intent, PERMISSION)
+        context.sendBroadcast(intent)
     }
 
     fun stop(context: Context) {
         val intent = Intent("$PKG.action.STOP").apply {
             setClassName(PKG, RECEIVER)
         }
-        context.sendBroadcast(intent, PERMISSION)
+        context.sendBroadcast(intent)
     }
 
     fun setLocation(
@@ -101,15 +92,9 @@ object FakeLocationControl {
             if (accuracy != null) putExtra("accuracy", accuracy)
             if (startFaking) putExtra("start", true)
         }
-        context.sendBroadcast(intent, PERMISSION)
+        context.sendBroadcast(intent)
     }
 }
 ```
 
-The caller app must also declare in its own `AndroidManifest.xml`:
-
-```xml
-<uses-permission android:name="com.noobexon.xposedfakelocation.permission.CONTROL" />
-```
-
-and be signed with the same signing key as XposedFakeLocation.
+No `<uses-permission>` needed in the caller app's manifest. Any signing key works.
