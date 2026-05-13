@@ -245,7 +245,7 @@ fun SettingsScreen(
                     Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
                         BooleanSettingItem(
                             title = "Use built-in target app selection",
-                            description = "On: only apps selected in 'Target Apps' get a fake location. Off: spoof every app in the LSPosed scope (pre-v0.0.7 behavior).",
+                            description = "On (default): target apps are picked in the in-app 'Target Apps' screen; LSPosed scope only needs 'android' and 'com.android.phone'. Off: in-app list is ignored and the system-server / phone hooks are NOT installed — pick target apps directly in LSPosed scope (pre-v0.0.7 behavior). Reboot or force-stop the target apps after changing this.",
                             checked = settingsViewModel.useInAppTargetApps.collectAsState().value,
                             onCheckedChange = settingsViewModel::setUseInAppTargetApps
                         )

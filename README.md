@@ -91,6 +91,8 @@ You can always install the latest stable version from the releases page. If you 
    - Reboot your device to apply the scope change.
    - Select target apps inside XposedFakeLocation instead of selecting each target app in LSPosed.
 
+   **Alternative (pre-v0.0.7 behavior):** If the in-app target selector does not work for you, open **Settings** inside XposedFakeLocation and turn **"Use built-in target app selection"** OFF. In that mode the in-app list is ignored and the `android` / `com.android.phone` system-wide hooks are NOT installed. You then pick target apps directly in **LSPosed scope** (just like in v0.0.6) — add each target app to the module's scope there, remove `android` and `com.android.phone` if you no longer need them, and reboot.
+
 ---
 
 ## **Usage**
@@ -156,6 +158,24 @@ You can always install the latest stable version from the releases page. If you 
      ```
 
    - Full action/extra reference and a Kotlin caller snippet: [`docs/EXTERNAL_CONTROL.md`](docs/EXTERNAL_CONTROL.md).
+
+### **Debugging which mode is active (logcat)**
+
+Both modes log to standard Android logcat under the tag `XposedFakeLocation`, in addition to the Xposed log. To verify at runtime which targeting mode is active and which packages are matched:
+
+```bash
+adb logcat -s XposedFakeLocation:I
+```
+
+Sample output:
+
+```
+I XposedFakeLocation: Mode=IN_APP_TARGET_LIST | Installing system-server location hooks (android).
+I XposedFakeLocation: shouldSpoofPackage(com.example.app) -> true ; mode=IN_APP_TARGET_LIST hit
+I XposedFakeLocation: Mode=LSPOSED_SCOPE_ONLY | Skipping system-server hooks (android). Selection is driven solely by LSPosed scope; add target apps there.
+```
+
+Decisions are deduplicated per-package so the log stays readable; reboot to reset the dedup state.
 
 ---
 
