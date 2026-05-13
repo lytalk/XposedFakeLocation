@@ -40,3 +40,4 @@ app/google-services.json
 .kotlin/
 .cursor/
 .claude/
+build-install.bat
