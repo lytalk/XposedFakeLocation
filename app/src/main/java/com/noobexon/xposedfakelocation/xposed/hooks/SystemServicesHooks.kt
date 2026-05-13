@@ -234,6 +234,8 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
         hookAll(wifiServiceClass, "getConnectionInfo", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (!shouldSpoofArgs(param.args)) return
+                // TODO: These Wi-Fi identity values are hardcoded as a temporary fallback.
+                // Expose them as user-configurable settings in the manager app.
                 param.result = WifiInfo.Builder()
                     .setBssid("02:00:00:00:00:00")
                     .setSsid("AndroidAP".toByteArray())
