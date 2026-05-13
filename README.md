@@ -42,6 +42,7 @@
 - **User-Friendly Interface**: Modern Material Design 3 UI built with Jetpack Compose.
 - **Intuitive Navigation**: Easy access to maps, favorite locations, and settings.
 - **Community Integration**: Direct links to Telegram, Discord, and GitHub communities.
+- **Headless Mode (External Intent Control)**: Start/stop spoofing and set the active fake location from another app or `adb shell` via broadcast intents — no need to open the UI. See [`docs/EXTERNAL_CONTROL.md`](docs/EXTERNAL_CONTROL.md).
 
 ---
 
@@ -136,6 +137,25 @@ You can always install the latest stable version from the releases page. If you 
 7. **Stop Spoofing**
 
    - Toggle the **Stop** button to cease location spoofing.
+
+8. **Headless Mode (Optional)**
+
+   - You can drive XposedFakeLocation entirely from another app or from `adb shell` using broadcast intents — useful for automation or integrating with your own tools. No additional permissions or signing requirements.
+
+     ```bash
+     # Start spoofing at a specific location
+     adb shell am broadcast \
+       -a com.noobexon.xposedfakelocation.action.START \
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver \
+       --ed latitude 48.8566 --ed longitude 2.3522
+
+     # Stop spoofing
+     adb shell am broadcast \
+       -a com.noobexon.xposedfakelocation.action.STOP \
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver
+     ```
+
+   - Full action/extra reference and a Kotlin caller snippet: [`docs/EXTERNAL_CONTROL.md`](docs/EXTERNAL_CONTROL.md).
 
 ---
 
