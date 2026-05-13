@@ -143,6 +143,7 @@ You can always install the latest stable version from the releases page. If you 
 8. **Headless Mode (Optional)**
 
    - You can drive XposedFakeLocation entirely from another app or from `adb shell` using broadcast intents — useful for automation or integrating with your own tools. No additional permissions or signing requirements.
+   - ⚠️ **Security note:** the broadcast receiver is exported with **no permission check**. Any app installed on the device and `adb shell` can flip play/stop and inject coordinates. This is intentional in this fork for automation use cases — see [`docs/EXTERNAL_CONTROL.md`](docs/EXTERNAL_CONTROL.md) for how to lock it down if you don't want this.
 
      ```bash
      # Play / ON: start spoofing using whatever location was last set

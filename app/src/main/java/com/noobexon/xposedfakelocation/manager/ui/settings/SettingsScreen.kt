@@ -173,9 +173,27 @@ fun SettingsScreen(
 ) {
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
+    var showRebootDialog by remember { mutableStateOf(false) }
 
     // Get settings from the definition object
     val allSettings = SettingDefinitions.getSettings(settingsViewModel)
+
+    if (showRebootDialog) {
+        AlertDialog(
+            onDismissRequest = { showRebootDialog = false },
+            title = { Text("Reboot required") },
+            text = {
+                Text(
+                    "Changes to 'Use built-in target app selection' only take effect after a full device reboot, because the Xposed hooks in system_server and com.android.phone are installed at boot. Please reboot when convenient."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showRebootDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -245,9 +263,12 @@ fun SettingsScreen(
                     Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
                         BooleanSettingItem(
                             title = "Use built-in target app selection",
-                            description = "On (default): target apps are picked in the in-app 'Target Apps' screen; LSPosed scope only needs 'android' and 'com.android.phone'. Off: in-app list is ignored and the system-server / phone hooks are NOT installed — pick target apps directly in LSPosed scope (pre-v0.0.7 behavior). Reboot or force-stop the target apps after changing this.",
+                            description = "On (default): target apps are picked in the in-app 'Target Apps' screen; LSPosed scope only needs 'android' and 'com.android.phone'. Off: in-app list is ignored and the system-server / phone hooks are NOT installed — pick target apps directly in LSPosed scope (pre-v0.0.7 behavior). A reboot is required for changes to take effect.",
                             checked = settingsViewModel.useInAppTargetApps.collectAsState().value,
-                            onCheckedChange = settingsViewModel::setUseInAppTargetApps
+                            onCheckedChange = { newValue ->
+                                settingsViewModel.setUseInAppTargetApps(newValue)
+                                showRebootDialog = true
+                            }
                         )
                     }
                 }

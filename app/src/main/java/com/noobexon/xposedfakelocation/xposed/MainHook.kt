@@ -5,6 +5,7 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import com.noobexon.xposedfakelocation.data.LOGCAT_TAG
 import com.noobexon.xposedfakelocation.data.MANAGER_APP_PACKAGE_NAME
 import com.noobexon.xposedfakelocation.xposed.hooks.LocationApiHooks
 import com.noobexon.xposedfakelocation.xposed.hooks.PhoneServicesHooks
@@ -80,12 +81,8 @@ class MainHook : IXposedHookLoadPackage {
     private fun logBoth(message: String) {
         XposedBridge.log("$tag $message")
         try {
-            Log.i(LOG_TAG, message)
+            Log.i(LOGCAT_TAG, message)
         } catch (_: Throwable) {
         }
-    }
-
-    companion object {
-        const val LOG_TAG = "XposedFakeLocation"
     }
 }

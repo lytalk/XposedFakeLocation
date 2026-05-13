@@ -11,8 +11,9 @@ import de.robv.android.xposed.XposedBridge
 
 object PreferencesUtil {
     private const val TAG = "[PreferencesUtil]"
-    private const val LOG_TAG = "XposedFakeLocation"
 
+    // Per-process memo so spoof-decision logs don't spam logcat on hot location-query paths.
+    // Bounded by (|installed packages| × small set of reasons); not a leak.
     private val loggedDecisions: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
 
     private val preferences: XSharedPreferences = XSharedPreferences(MANAGER_APP_PACKAGE_NAME, SHARED_PREFS_FILE).apply {
@@ -142,7 +143,7 @@ object PreferencesUtil {
             val msg = "shouldSpoofPackage($packageName) -> $decision ; $reason"
             XposedBridge.log("$TAG $msg")
             try {
-                Log.i(LOG_TAG, msg)
+                Log.i(LOGCAT_TAG, msg)
             } catch (_: Throwable) {
             }
         }

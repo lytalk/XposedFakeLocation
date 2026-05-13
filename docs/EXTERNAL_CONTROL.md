@@ -2,11 +2,15 @@
 
 XposedFakeLocation exposes a `BroadcastReceiver` that lets any app on the device — or `adb shell` — control faking headlessly: start it, stop it, and update the fake coordinates without opening the XposedFakeLocation UI.
 
-## Security model
+## Security model — please read
 
-**None.** The receiver is exported with no permission check. Any app installed on the device, and `adb shell`, can send these broadcasts. This is intentional so that third-party apps signed with a different key (and ADB) can drive the module.
+**None. The receiver is fully open.** It is declared with `android:exported="true"` and **no `android:permission`** in the manifest. There is no caller check inside `ControlReceiver.onReceive` either. Consequences:
 
-If you want to lock this down later, re-introduce a custom `<permission>` in the manifest and an authorization check in `ControlReceiver.onReceive`.
+- **Any app installed on the device** — regardless of signing key, target SDK, or requested permissions — can send these broadcasts and toggle spoofing or inject coordinates.
+- **`adb shell` works too** (useful for automation and CI).
+- A malicious or buggy app could silently start/stop spoofing or move your fake location while a target app is running. If your threat model cares about that, do not enable this build.
+
+This is **intentional** for this fork: the primary use case is driving the module from a separate automation app signed with a different key. If you want to lock it down, re-introduce a custom `<permission android:protectionLevel="signature">` in the manifest, add `android:permission="..."` to the `<receiver>`, and re-add an authorization check in `ControlReceiver.onReceive` (`checkCallingOrSelfPermission` or a UID comparison).
 
 ## Actions and extras
 
