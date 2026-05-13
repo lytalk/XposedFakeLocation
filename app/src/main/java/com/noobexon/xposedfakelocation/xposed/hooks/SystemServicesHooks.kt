@@ -103,6 +103,10 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
 
     private fun hookMiuiLocationServices(classLoader: ClassLoader) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        if (!isXiaomiFamilyDevice()) {
+            XposedBridge.log("$tag Skipping MIUI location hooks on non-Xiaomi device.")
+            return
+        }
 
         val miuiClass = findClass(
             classLoader,
@@ -255,6 +259,20 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
                 XposedBridge.log("$tag Blocked geofence registration while spoofing is enabled.")
             }
         })
+    }
+
+    private fun isXiaomiFamilyDevice(): Boolean {
+        val markers = listOf("xiaomi", "redmi", "poco")
+        val buildInfo = listOf(
+            Build.MANUFACTURER.orEmpty(),
+            Build.BRAND.orEmpty(),
+            Build.PRODUCT.orEmpty(),
+            Build.DEVICE.orEmpty()
+        )
+        return buildInfo.any { info ->
+            val lower = info.lowercase()
+            markers.any(lower::contains)
+        }
     }
 
     private fun hookAll(clazz: Class<*>, methodName: String, callback: XC_MethodHook) {
