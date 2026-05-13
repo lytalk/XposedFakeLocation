@@ -37,6 +37,8 @@ const val KEY_SPEED_ACCURACY = "speed_accuracy"
 const val KEY_FAVORITES = "favorites"
 const val KEY_TARGET_APPS = "target_apps"
 
+const val KEY_HIDE_FAKE_LOCATION_TOAST = "hide_fake_location_toast"
+
  // DEFAULT VALUES
 const val DEFAULT_USE_ACCURACY = false
 const val DEFAULT_ACCURACY = 0.0
@@ -61,6 +63,8 @@ const val DEFAULT_SPEED = 0.0f
 
 const val DEFAULT_USE_SPEED_ACCURACY = false
 const val DEFAULT_SPEED_ACCURACY = 0.0f
+
+const val DEFAULT_HIDE_FAKE_LOCATION_TOAST = false
 
 // MATH & PHYS
 const val PI = 3.14159265359

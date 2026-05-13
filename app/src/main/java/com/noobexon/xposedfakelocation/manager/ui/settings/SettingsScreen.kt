@@ -214,7 +214,26 @@ fun SettingsScreen(
                     .verticalScroll(scrollState)
             ) {
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
-                
+
+                CategoryHeader("Notifications")
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.SPACING_SMALL),
+                    shape = RoundedCornerShape(Dimensions.CARD_CORNER_RADIUS),
+                    elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
+                ) {
+                    Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
+                        BooleanSettingItem(
+                            title = "Hide 'Fake location active' toast",
+                            description = "Suppresses the toast shown when the module activates in a target app",
+                            checked = settingsViewModel.hideFakeLocationToast.collectAsState().value,
+                            onCheckedChange = settingsViewModel::setHideFakeLocationToast
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
+
                 // Display settings by category
                 SettingDefinitions.CATEGORIES.forEach { (category, settingsInCategory) ->
                     CategoryHeader(category)
@@ -281,6 +300,73 @@ fun CategoryHeader(title: String) {
                 .padding(start = Dimensions.SPACING_MEDIUM),
             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         )
+    }
+}
+
+@Composable
+fun BooleanSettingItem(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    var showTooltip by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(Dimensions.SPACING_SMALL)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    IconButton(
+                        onClick = { showTooltip = !showTooltip },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "More information about $title",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                if (showTooltip) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = Dimensions.SPACING_EXTRA_SMALL)
+                    )
+                }
+            }
+
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                modifier = Modifier.semantics {
+                    contentDescription = if (checked) "Disable $title" else "Enable $title"
+                }
+            )
+        }
     }
 }
 

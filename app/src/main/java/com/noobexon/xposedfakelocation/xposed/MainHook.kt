@@ -8,6 +8,7 @@ import com.noobexon.xposedfakelocation.data.MANAGER_APP_PACKAGE_NAME
 import com.noobexon.xposedfakelocation.xposed.hooks.LocationApiHooks
 import com.noobexon.xposedfakelocation.xposed.hooks.PhoneServicesHooks
 import com.noobexon.xposedfakelocation.xposed.hooks.SystemServicesHooks
+import com.noobexon.xposedfakelocation.xposed.utils.PreferencesUtil
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -53,7 +54,9 @@ class MainHook : IXposedHookLoadPackage {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     context = (param.args[0] as Application).applicationContext.also {
                         XposedBridge.log("$tag Target App's context has been acquired successfully.")
-                        Toast.makeText(it, "Fake Location Is Active!", Toast.LENGTH_SHORT).show()
+                        if (!PreferencesUtil.getHideFakeLocationToast()) {
+                            Toast.makeText(it, "Fake Location Is Active!", Toast.LENGTH_SHORT).show()
+                        }
                     }
                     locationApiHooks = LocationApiHooks(lpparam).also { it.initHooks() }
                 }

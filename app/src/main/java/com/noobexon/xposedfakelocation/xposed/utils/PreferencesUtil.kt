@@ -88,6 +88,10 @@ object PreferencesUtil {
         return getPreference<Float>(KEY_SPEED_ACCURACY)
     }
 
+    fun getHideFakeLocationToast(): Boolean {
+        return getPreference<Boolean>(KEY_HIDE_FAKE_LOCATION_TOAST) ?: DEFAULT_HIDE_FAKE_LOCATION_TOAST
+    }
+
     fun getTargetApps(): Set<String> {
         preferences.reload()
         val json = preferences.getString(KEY_TARGET_APPS, null) ?: return emptySet()

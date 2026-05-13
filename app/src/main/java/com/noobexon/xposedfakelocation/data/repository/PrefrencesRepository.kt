@@ -57,6 +57,7 @@ class PreferencesRepository(private val context: Context) {
         val SPEED_ACCURACY = floatPreferencesKey(KEY_SPEED_ACCURACY)
         val FAVORITES = stringPreferencesKey(KEY_FAVORITES)
         val TARGET_APPS = stringPreferencesKey(KEY_TARGET_APPS)
+        val HIDE_FAKE_LOCATION_TOAST = booleanPreferencesKey(KEY_HIDE_FAKE_LOCATION_TOAST)
     }
 
     // Generic helper for DataStore flows with error handling
@@ -527,5 +528,19 @@ class PreferencesRepository(private val context: Context) {
     // For backward compatibility
     fun getSpeedAccuracy(): Float {
         return sharedPrefs.getFloat(KEY_SPEED_ACCURACY, DEFAULT_SPEED_ACCURACY)
+    }
+
+    // Hide Fake Location Toast
+    fun getHideFakeLocationToastFlow(): Flow<Boolean> {
+        return getPreferenceFlow(PreferenceKeys.HIDE_FAKE_LOCATION_TOAST, DEFAULT_HIDE_FAKE_LOCATION_TOAST)
+    }
+
+    suspend fun saveHideFakeLocationToast(hideFakeLocationToast: Boolean) {
+        savePreference(PreferenceKeys.HIDE_FAKE_LOCATION_TOAST, hideFakeLocationToast, KEY_HIDE_FAKE_LOCATION_TOAST, hideFakeLocationToast)
+    }
+
+    // For backward compatibility
+    fun getHideFakeLocationToast(): Boolean {
+        return sharedPrefs.getBoolean(KEY_HIDE_FAKE_LOCATION_TOAST, DEFAULT_HIDE_FAKE_LOCATION_TOAST)
     }
 }
