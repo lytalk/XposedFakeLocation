@@ -239,6 +239,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val hideFakeLocationToast: StateFlow<Boolean> = _hideFakeLocationToastPreference.state
 
+    // Preference for In-App Target Apps Selection
+    private val _useInAppTargetAppsPreference = BooleanPreference(
+        DEFAULT_USE_INAPP_TARGET_APPS,
+        preferencesRepository.getUseInAppTargetAppsFlow(),
+        preferencesRepository::saveUseInAppTargetApps,
+        viewModelScope
+    )
+    val useInAppTargetApps: StateFlow<Boolean> = _useInAppTargetAppsPreference.state
+
     // Setter methods for all preferences
     fun setUseAccuracy(value: Boolean) = _useAccuracyPreference.setValue(value)
     fun setAccuracy(value: Double) = _accuracyPreference.setValue(value)
@@ -257,4 +266,5 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setUseSpeedAccuracy(value: Boolean) = _useSpeedAccuracyPreference.setValue(value)
     fun setSpeedAccuracy(value: Float) = _speedAccuracyPreference.setValue(value)
     fun setHideFakeLocationToast(value: Boolean) = _hideFakeLocationToastPreference.setValue(value)
+    fun setUseInAppTargetApps(value: Boolean) = _useInAppTargetAppsPreference.setValue(value)
 }

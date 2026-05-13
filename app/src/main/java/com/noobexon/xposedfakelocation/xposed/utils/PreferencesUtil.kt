@@ -92,6 +92,15 @@ object PreferencesUtil {
         return getPreference<Boolean>(KEY_HIDE_FAKE_LOCATION_TOAST) ?: DEFAULT_HIDE_FAKE_LOCATION_TOAST
     }
 
+    fun getUseInAppTargetApps(): Boolean {
+        preferences.reload()
+        return if (preferences.contains(KEY_USE_INAPP_TARGET_APPS)) {
+            preferences.getBoolean(KEY_USE_INAPP_TARGET_APPS, DEFAULT_USE_INAPP_TARGET_APPS)
+        } else {
+            DEFAULT_USE_INAPP_TARGET_APPS
+        }
+    }
+
     fun getTargetApps(): Set<String> {
         preferences.reload()
         val json = preferences.getString(KEY_TARGET_APPS, null) ?: return emptySet()
@@ -107,6 +116,8 @@ object PreferencesUtil {
     fun shouldSpoofPackage(packageName: String?): Boolean {
         if (packageName.isNullOrBlank() || packageName == MANAGER_APP_PACKAGE_NAME) return false
         if (getIsPlaying() != true || getLastClickedLocation() == null) return false
+
+        if (!getUseInAppTargetApps()) return true
 
         val targetApps = getTargetApps()
         return targetApps.contains(packageName)

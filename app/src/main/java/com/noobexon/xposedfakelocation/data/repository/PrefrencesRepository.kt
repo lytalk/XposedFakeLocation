@@ -58,6 +58,7 @@ class PreferencesRepository(private val context: Context) {
         val FAVORITES = stringPreferencesKey(KEY_FAVORITES)
         val TARGET_APPS = stringPreferencesKey(KEY_TARGET_APPS)
         val HIDE_FAKE_LOCATION_TOAST = booleanPreferencesKey(KEY_HIDE_FAKE_LOCATION_TOAST)
+        val USE_INAPP_TARGET_APPS = booleanPreferencesKey(KEY_USE_INAPP_TARGET_APPS)
     }
 
     // Generic helper for DataStore flows with error handling
@@ -542,5 +543,14 @@ class PreferencesRepository(private val context: Context) {
     // For backward compatibility
     fun getHideFakeLocationToast(): Boolean {
         return sharedPrefs.getBoolean(KEY_HIDE_FAKE_LOCATION_TOAST, DEFAULT_HIDE_FAKE_LOCATION_TOAST)
+    }
+
+    // Use In-App Target Apps Selection
+    fun getUseInAppTargetAppsFlow(): Flow<Boolean> {
+        return getPreferenceFlow(PreferenceKeys.USE_INAPP_TARGET_APPS, DEFAULT_USE_INAPP_TARGET_APPS)
+    }
+
+    suspend fun saveUseInAppTargetApps(useInAppTargetApps: Boolean) {
+        savePreference(PreferenceKeys.USE_INAPP_TARGET_APPS, useInAppTargetApps, KEY_USE_INAPP_TARGET_APPS, useInAppTargetApps)
     }
 }

@@ -234,6 +234,25 @@ fun SettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
 
+                CategoryHeader("Target Apps")
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.SPACING_SMALL),
+                    shape = RoundedCornerShape(Dimensions.CARD_CORNER_RADIUS),
+                    elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
+                ) {
+                    Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
+                        BooleanSettingItem(
+                            title = "Use built-in target app selection",
+                            description = "On: only apps selected in 'Target Apps' get a fake location. Off: spoof every app in the LSPosed scope (pre-v0.0.7 behavior).",
+                            checked = settingsViewModel.useInAppTargetApps.collectAsState().value,
+                            onCheckedChange = settingsViewModel::setUseInAppTargetApps
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
+
                 // Display settings by category
                 SettingDefinitions.CATEGORIES.forEach { (category, settingsInCategory) ->
                     CategoryHeader(category)
