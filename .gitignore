@@ -39,3 +39,4 @@ app/google-services.json
 # === Kotlin build artifacts ===
 .kotlin/
 .cursor/
+.claude/
