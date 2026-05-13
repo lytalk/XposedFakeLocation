@@ -37,6 +37,10 @@ class PhoneServicesHooks(private val appLpparam: LoadPackageParam) {
         hookAll(phoneInterfaceManagerClass, "getAllCellInfo", object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 if (!shouldSpoofArgs(param.args)) return
+                // Return empty cell info on purpose so apps that rely on tower checks can fall back
+                // to GPS-derived location when spoofing is active.
+                // TODO: This may conflict with other telephony signals (for example, network type
+                // still reporting MOBILE). If users report issues, synthesize coherent fake data.
                 param.result = emptyList<CellInfo>()
                 XposedBridge.log("$tag Cleared all cell info while spoofing.")
             }
@@ -45,6 +49,9 @@ class PhoneServicesHooks(private val appLpparam: LoadPackageParam) {
         hookAll(phoneInterfaceManagerClass, "getNeighboringCellInfo", object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 if (!shouldSpoofArgs(param.args)) return
+                // Same reasoning as getAllCellInfo: keep neighboring towers empty to encourage
+                // GPS fallback in apps that combine cell and GNSS signals.
+                // TODO: If consistency checks fail in some apps, provide coherent fake neighbors.
                 param.result = emptyList<NeighboringCellInfo>()
                 XposedBridge.log("$tag Cleared neighboring cell info while spoofing.")
             }
