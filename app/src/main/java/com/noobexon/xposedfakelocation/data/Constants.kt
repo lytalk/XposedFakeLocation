@@ -69,5 +69,5 @@ const val RADIUS_EARTH = 6378137.0 // Approximately Earth's radius in meters
 // MAP SETTINGS
 const val DEFAULT_MAP_ZOOM = 18.0
 const val WORLD_MAP_ZOOM = 2.0
-const val LOCATION_DETECTION_MAX_ATTEMPTS = 80
+const val LOCATION_DETECTION_MAX_ATTEMPTS = 20
 const val LOCATION_DETECTION_DELAY_MS = 100L
