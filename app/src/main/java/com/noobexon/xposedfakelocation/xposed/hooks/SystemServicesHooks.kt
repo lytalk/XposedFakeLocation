@@ -5,7 +5,6 @@ import android.location.Location
 import android.location.LocationManager
 import android.net.wifi.WifiInfo
 import android.os.Build
-import android.telephony.CellInfo
 import android.util.ArrayMap
 import com.noobexon.xposedfakelocation.xposed.utils.LocationUtil
 import dalvik.system.PathClassLoader
@@ -121,16 +120,18 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
         hookAll(miuiClass, "getBlurryCellLocation", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (!shouldSpoofArgs(param.args)) return
-                param.result = null
-                XposedBridge.log("$tag Cleared MIUI blurry cell location result.")
+                // TODO: Synthesize coherent fake cell data before modifying this result.
+                // Empty/null cell feedback is easier to detect than real pass-through data.
+                XposedBridge.log("$tag Left MIUI blurry cell location result unchanged.")
             }
         })
 
         hookAll(miuiClass, "getBlurryCellInfos", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (!shouldSpoofArgs(param.args)) return
-                param.result = emptyList<CellInfo>()
-                XposedBridge.log("$tag Cleared MIUI blurry cell info result.")
+                // TODO: Synthesize coherent fake cell data before modifying this result.
+                // Empty/null cell feedback is easier to detect than real pass-through data.
+                XposedBridge.log("$tag Left MIUI blurry cell info result unchanged.")
             }
         })
 
