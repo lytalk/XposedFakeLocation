@@ -377,7 +377,6 @@ class PreferencesRepository(private val context: Context) {
         savePreference(PreferenceKeys.TARGET_APPS, json, KEY_TARGET_APPS, json)
     }
 
-
     private fun parseTargetApps(json: String?): Set<String> {
         if (json.isNullOrBlank()) return emptySet()
         return try {
