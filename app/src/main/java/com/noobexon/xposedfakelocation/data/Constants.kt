@@ -35,6 +35,7 @@ const val KEY_USE_SPEED_ACCURACY = "use_speed_accuracy"
 const val KEY_SPEED_ACCURACY = "speed_accuracy"
 
 const val KEY_FAVORITES = "favorites"
+const val KEY_TARGET_APPS = "target_apps"
 
  // DEFAULT VALUES
 const val DEFAULT_USE_ACCURACY = false
