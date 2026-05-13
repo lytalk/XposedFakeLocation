@@ -145,16 +145,27 @@ You can always install the latest stable version from the releases page. If you 
    - You can drive XposedFakeLocation entirely from another app or from `adb shell` using broadcast intents — useful for automation or integrating with your own tools. No additional permissions or signing requirements.
 
      ```bash
-     # Start spoofing at a specific location
+     # Play / ON: start spoofing using whatever location was last set
      adb shell am broadcast \
        -a com.noobexon.xposedfakelocation.action.START \
-       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver \
-       --ed latitude 48.8566 --ed longitude 2.3522
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver
 
-     # Stop spoofing
+     # Stop / OFF: stop spoofing
      adb shell am broadcast \
        -a com.noobexon.xposedfakelocation.action.STOP \
        -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver
+
+     # Set the active fake location only (does NOT start spoofing) — example: Berlin
+     adb shell am broadcast \
+       -a com.noobexon.xposedfakelocation.action.SET_LOCATION \
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver \
+       --ed latitude 52.5200 --ed longitude 13.4050
+
+     # Set location and immediately start spoofing — Berlin
+     adb shell am broadcast \
+       -a com.noobexon.xposedfakelocation.action.SET_LOCATION \
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver \
+       --ed latitude 52.5200 --ed longitude 13.4050 --ez start true
      ```
 
    - Full action/extra reference and a Kotlin caller snippet: [`docs/EXTERNAL_CONTROL.md`](docs/EXTERNAL_CONTROL.md).
