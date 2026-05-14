@@ -377,10 +377,6 @@ class PreferencesRepository(private val context: Context) {
         savePreference(PreferenceKeys.TARGET_APPS, json, KEY_TARGET_APPS, json)
     }
 
-    fun getTargetApps(): Set<String> {
-        return parseTargetApps(sharedPrefs.getString(KEY_TARGET_APPS, null))
-    }
-
     private fun parseTargetApps(json: String?): Set<String> {
         if (json.isNullOrBlank()) return emptySet()
         return try {

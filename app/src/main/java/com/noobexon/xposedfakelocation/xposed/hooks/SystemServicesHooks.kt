@@ -5,6 +5,7 @@ import android.location.Location
 import android.location.LocationManager
 import android.net.wifi.WifiInfo
 import android.os.Build
+import android.telephony.CellInfo
 import android.util.ArrayMap
 import com.noobexon.xposedfakelocation.xposed.utils.LocationUtil
 import dalvik.system.PathClassLoader
@@ -102,6 +103,10 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
 
     private fun hookMiuiLocationServices(classLoader: ClassLoader) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        if (!isXiaomiFamilyDevice()) {
+            XposedBridge.log("$tag Skipping MIUI location hooks on non-Xiaomi device.")
+            return
+        }
 
         val miuiClass = findClass(
             classLoader,
@@ -120,18 +125,16 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
         hookAll(miuiClass, "getBlurryCellLocation", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (!shouldSpoofArgs(param.args)) return
-                // TODO: Synthesize coherent fake cell data before modifying this result.
-                // Empty/null cell feedback is easier to detect than real pass-through data.
-                XposedBridge.log("$tag Left MIUI blurry cell location result unchanged.")
+                param.result = null
+                XposedBridge.log("$tag Cleared MIUI blurry cell location result.")
             }
         })
 
         hookAll(miuiClass, "getBlurryCellInfos", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (!shouldSpoofArgs(param.args)) return
-                // TODO: Synthesize coherent fake cell data before modifying this result.
-                // Empty/null cell feedback is easier to detect than real pass-through data.
-                XposedBridge.log("$tag Left MIUI blurry cell info result unchanged.")
+                param.result = emptyList<CellInfo>()
+                XposedBridge.log("$tag Cleared MIUI blurry cell info result.")
             }
         })
 
@@ -231,6 +234,8 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
         hookAll(wifiServiceClass, "getConnectionInfo", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (!shouldSpoofArgs(param.args)) return
+                // TODO: These Wi-Fi identity values are hardcoded as a temporary fallback.
+                // Expose them as user-configurable settings in the manager app.
                 param.result = WifiInfo.Builder()
                     .setBssid("02:00:00:00:00:00")
                     .setSsid("AndroidAP".toByteArray())
@@ -256,6 +261,20 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
                 XposedBridge.log("$tag Blocked geofence registration while spoofing is enabled.")
             }
         })
+    }
+
+    private fun isXiaomiFamilyDevice(): Boolean {
+        val markers = listOf("xiaomi", "redmi", "poco")
+        val buildInfo = listOf(
+            Build.MANUFACTURER.orEmpty(),
+            Build.BRAND.orEmpty(),
+            Build.PRODUCT.orEmpty(),
+            Build.DEVICE.orEmpty()
+        )
+        return buildInfo.any { info ->
+            val lower = info.lowercase()
+            markers.any(lower::contains)
+        }
     }
 
     private fun hookAll(clazz: Class<*>, methodName: String, callback: XC_MethodHook) {
