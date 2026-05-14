@@ -8,6 +8,7 @@ import com.noobexon.xposedfakelocation.data.MANAGER_APP_PACKAGE_NAME
 import com.noobexon.xposedfakelocation.xposed.hooks.LocationApiHooks
 import com.noobexon.xposedfakelocation.xposed.hooks.PhoneServicesHooks
 import com.noobexon.xposedfakelocation.xposed.hooks.SystemServicesHooks
+import com.noobexon.xposedfakelocation.xposed.utils.PreferencesUtil
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -43,6 +44,12 @@ class MainHook : IXposedHookLoadPackage {
         }
     }
 
+    companion object {
+        /** Shown in target apps (not from manager resources). */
+        private const val TOAST_SPOOFING_ACTIVE =
+            "Fake location is active for this app"
+    }
+
     private fun initHookingLogic(lpparam: LoadPackageParam) {
         XposedHelpers.findAndHookMethod(
             "android.app.Instrumentation",
@@ -51,9 +58,13 @@ class MainHook : IXposedHookLoadPackage {
             Application::class.java,
             object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam) {
-                    context = (param.args[0] as Application).applicationContext.also {
-                        XposedBridge.log("$tag Target App's context has been acquired successfully.")
-                        Toast.makeText(it, "Fake Location Is Active!", Toast.LENGTH_SHORT).show()
+                    val app = param.args[0] as Application
+                    context = app.applicationContext
+                    XposedBridge.log("$tag Target App's context has been acquired successfully.")
+                    if (PreferencesUtil.shouldShowToastNotifications() &&
+                        PreferencesUtil.shouldSpoofPackage(lpparam.packageName)
+                    ) {
+                        Toast.makeText(context, TOAST_SPOOFING_ACTIVE, Toast.LENGTH_SHORT).show()
                     }
                     locationApiHooks = LocationApiHooks(lpparam).also { it.initHooks() }
                 }

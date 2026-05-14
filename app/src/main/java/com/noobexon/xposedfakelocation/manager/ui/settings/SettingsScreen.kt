@@ -23,9 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import com.noobexon.xposedfakelocation.R
 
 // Dimension constants
 private object Dimensions {
@@ -213,6 +215,49 @@ fun SettingsScreen(
                     .padding(horizontal = Dimensions.SPACING_MEDIUM)
                     .verticalScroll(scrollState)
             ) {
+                Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
+
+                CategoryHeader("General")
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.SPACING_SMALL),
+                    shape = RoundedCornerShape(Dimensions.CARD_CORNER_RADIUS),
+                    elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
+                ) {
+                    val toastOn by settingsViewModel.showToastNotifications.collectAsState()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(Dimensions.SPACING_MEDIUM),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.settings_toast_notifications_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = stringResource(R.string.settings_toast_notifications_desc),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = Dimensions.SPACING_EXTRA_SMALL)
+                            )
+                        }
+                        Switch(
+                            checked = toastOn,
+                            onCheckedChange = settingsViewModel::setShowToastNotifications,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
                 
                 // Display settings by category

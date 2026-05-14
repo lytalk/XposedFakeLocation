@@ -1,6 +1,5 @@
 package com.noobexon.xposedfakelocation.manager.ui.map
 
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -12,12 +11,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.noobexon.xposedfakelocation.R
 import com.noobexon.xposedfakelocation.data.model.FavoriteLocation
 import com.noobexon.xposedfakelocation.manager.ui.drawer.DrawerContent
 import com.noobexon.xposedfakelocation.manager.ui.map.components.AddToFavoritesDialog
 import com.noobexon.xposedfakelocation.manager.ui.map.components.GoToPointDialog
 import com.noobexon.xposedfakelocation.manager.ui.map.components.MapViewContainer
 import com.noobexon.xposedfakelocation.manager.ui.navigation.Screen
+import com.noobexon.xposedfakelocation.manager.util.AppToast
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -145,9 +146,15 @@ fun MapScreen(
                             val wasPlaying = uiState.isPlaying
                             mapViewModel.togglePlaying()
                             if (!wasPlaying) {
-                                Toast.makeText(context, "Fake Location Set", Toast.LENGTH_SHORT).show()
+                                AppToast.showShort(
+                                    context,
+                                    context.getString(R.string.toast_fake_location_started)
+                                )
                             } else {
-                                Toast.makeText(context, "Unset Fake Location", Toast.LENGTH_SHORT).show()
+                                AppToast.showShort(
+                                    context,
+                                    context.getString(R.string.toast_fake_location_stopped)
+                                )
                             }
                         }
                     },

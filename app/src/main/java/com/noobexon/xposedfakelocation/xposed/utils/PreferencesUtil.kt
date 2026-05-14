@@ -100,6 +100,14 @@ object PreferencesUtil {
         }
     }
 
+    fun shouldShowToastNotifications(): Boolean {
+        preferences.reload()
+        return preferences.getBoolean(
+            KEY_SHOW_TOAST_NOTIFICATIONS,
+            DEFAULT_SHOW_TOAST_NOTIFICATIONS
+        )
+    }
+
     fun shouldSpoofPackage(packageName: String?): Boolean {
         if (packageName.isNullOrBlank() || packageName == MANAGER_APP_PACKAGE_NAME) return false
         if (getIsPlaying() != true || getLastClickedLocation() == null) return false

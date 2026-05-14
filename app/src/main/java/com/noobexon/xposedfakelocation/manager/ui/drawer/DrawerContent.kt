@@ -2,7 +2,6 @@ package com.noobexon.xposedfakelocation.manager.ui.drawer
 
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,9 +22,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.noobexon.xposedfakelocation.R
 import compose.icons.LineAwesomeIcons
 import compose.icons.lineawesomeicons.*
 import com.noobexon.xposedfakelocation.manager.ui.navigation.Screen
+import com.noobexon.xposedfakelocation.manager.util.AppToast
 
 // Constants for drawer dimensions and styling
 private object DrawerDimensions {
@@ -112,7 +113,9 @@ fun DrawerContent(
             DrawerItem(
                 icon = LineAwesomeIcons.Telegram,
                 label = "Telegram",
-                onClick = { Toast.makeText(context, "Coming soon!", Toast.LENGTH_SHORT).show() },
+                onClick = {
+                    AppToast.showShort(context, context.getString(R.string.toast_coming_soon))
+                },
                 trailingIcon = {
                     Box(
                         modifier = Modifier

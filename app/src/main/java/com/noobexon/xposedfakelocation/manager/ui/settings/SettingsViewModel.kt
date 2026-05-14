@@ -230,6 +230,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val speedAccuracy: StateFlow<Float> = _speedAccuracyPreference.state
 
+    private val _showToastNotificationsPreference = BooleanPreference(
+        DEFAULT_SHOW_TOAST_NOTIFICATIONS,
+        preferencesRepository.getShowToastNotificationsFlow(),
+        preferencesRepository::saveShowToastNotifications,
+        viewModelScope
+    )
+    val showToastNotifications: StateFlow<Boolean> = _showToastNotificationsPreference.state
+
     // Setter methods for all preferences
     fun setUseAccuracy(value: Boolean) = _useAccuracyPreference.setValue(value)
     fun setAccuracy(value: Double) = _accuracyPreference.setValue(value)
@@ -247,4 +255,5 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setSpeed(value: Float) = _speedPreference.setValue(value)
     fun setUseSpeedAccuracy(value: Boolean) = _useSpeedAccuracyPreference.setValue(value)
     fun setSpeedAccuracy(value: Float) = _speedAccuracyPreference.setValue(value)
+    fun setShowToastNotifications(value: Boolean) = _showToastNotificationsPreference.setValue(value)
 }

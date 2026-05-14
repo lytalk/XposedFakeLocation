@@ -1,7 +1,6 @@
 package com.noobexon.xposedfakelocation.manager.ui.map.components
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -18,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.noobexon.xposedfakelocation.R
 import com.noobexon.xposedfakelocation.data.DEFAULT_MAP_ZOOM
 import com.noobexon.xposedfakelocation.data.LOCATION_DETECTION_DELAY_MS
 import com.noobexon.xposedfakelocation.data.LOCATION_DETECTION_MAX_ATTEMPTS
@@ -25,6 +25,7 @@ import com.noobexon.xposedfakelocation.data.WORLD_MAP_ZOOM
 import com.noobexon.xposedfakelocation.manager.ui.map.DialogState
 import com.noobexon.xposedfakelocation.manager.ui.map.LoadingState
 import com.noobexon.xposedfakelocation.manager.ui.map.MapViewModel
+import com.noobexon.xposedfakelocation.manager.util.AppToast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import org.osmdroid.events.MapEventsReceiver
@@ -152,7 +153,10 @@ private fun HandleCenterMapEvent(
             if (userLocation != null) {
                 mapView.controller.animateTo(userLocation)
             } else {
-                Toast.makeText(context, "User location not available", Toast.LENGTH_SHORT).show()
+                AppToast.showShort(
+                    context,
+                    context.getString(R.string.toast_user_location_unavailable)
+                )
             }
         }
     }

@@ -57,6 +57,7 @@ class PreferencesRepository(private val context: Context) {
         val SPEED_ACCURACY = floatPreferencesKey(KEY_SPEED_ACCURACY)
         val FAVORITES = stringPreferencesKey(KEY_FAVORITES)
         val TARGET_APPS = stringPreferencesKey(KEY_TARGET_APPS)
+        val SHOW_TOAST_NOTIFICATIONS = booleanPreferencesKey(KEY_SHOW_TOAST_NOTIFICATIONS)
     }
 
     // Generic helper for DataStore flows with error handling
@@ -109,7 +110,7 @@ class PreferencesRepository(private val context: Context) {
 
     // Is Playing
     fun getIsPlayingFlow(): Flow<Boolean> {
-        return getPreferenceFlow(PreferenceKeys.IS_PLAYING, DEFAULT_USE_ACCURACY)
+        return getPreferenceFlow(PreferenceKeys.IS_PLAYING, DEFAULT_IS_PLAYING)
     }
     
     suspend fun saveIsPlaying(isPlaying: Boolean) {
@@ -527,5 +528,28 @@ class PreferencesRepository(private val context: Context) {
     // For backward compatibility
     fun getSpeedAccuracy(): Float {
         return sharedPrefs.getFloat(KEY_SPEED_ACCURACY, DEFAULT_SPEED_ACCURACY)
+    }
+
+    fun getShowToastNotificationsFlow(): Flow<Boolean> {
+        return getPreferenceFlow(
+            PreferenceKeys.SHOW_TOAST_NOTIFICATIONS,
+            DEFAULT_SHOW_TOAST_NOTIFICATIONS
+        )
+    }
+
+    suspend fun saveShowToastNotifications(enabled: Boolean) {
+        savePreference(
+            PreferenceKeys.SHOW_TOAST_NOTIFICATIONS,
+            enabled,
+            KEY_SHOW_TOAST_NOTIFICATIONS,
+            enabled
+        )
+    }
+
+    fun getShowToastNotifications(): Boolean {
+        return sharedPrefs.getBoolean(
+            KEY_SHOW_TOAST_NOTIFICATIONS,
+            DEFAULT_SHOW_TOAST_NOTIFICATIONS
+        )
     }
 }

@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">XposedFakeLocation</string>
+    <string name="settings_toast_notifications_title">Toast notifications</string>
+    <string name="settings_toast_notifications_desc">Short messages when you start or stop spoofing, when my location is unavailable, and in the drawer (where applicable).</string>
+    <string name="toast_fake_location_started">Fake location is on</string>
+    <string name="toast_fake_location_stopped">Fake location is off</string>
+    <string name="toast_user_location_unavailable">Current location not available yet</string>
+    <string name="toast_coming_soon">Coming soon</string>
 </resources>

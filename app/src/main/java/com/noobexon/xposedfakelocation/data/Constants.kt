@@ -8,6 +8,9 @@ const val SHARED_PREFS_FILE = "xposed_shared_prefs"
 // KEYS
 const val KEY_IS_PLAYING = "is_playing"
 
+/** When true, the manager app and Xposed hook may show short Toast feedback. */
+const val KEY_SHOW_TOAST_NOTIFICATIONS = "show_toast_notifications"
+
 const val KEY_LAST_CLICKED_LOCATION = "last_clicked_location"
 
 const val KEY_USE_ACCURACY = "use_accuracy"
@@ -38,6 +41,8 @@ const val KEY_FAVORITES = "favorites"
 const val KEY_TARGET_APPS = "target_apps"
 
  // DEFAULT VALUES
+const val DEFAULT_IS_PLAYING = false
+const val DEFAULT_SHOW_TOAST_NOTIFICATIONS = true
 const val DEFAULT_USE_ACCURACY = false
 const val DEFAULT_ACCURACY = 0.0
 
