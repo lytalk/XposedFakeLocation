@@ -68,7 +68,7 @@ const val DEFAULT_SPEED = 0.0f
 const val DEFAULT_USE_SPEED_ACCURACY = false
 const val DEFAULT_SPEED_ACCURACY = 0.0f
 
-const val DEFAULT_HIDE_FAKE_LOCATION_TOAST = true
+const val DEFAULT_HIDE_FAKE_LOCATION_TOAST = false
 
 const val DEFAULT_USE_INAPP_TARGET_APPS = true
 
