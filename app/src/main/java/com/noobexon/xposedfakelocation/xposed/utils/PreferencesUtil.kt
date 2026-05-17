@@ -11,6 +11,11 @@ import de.robv.android.xposed.XposedBridge
 object PreferencesUtil {
     private const val TAG = "[PreferencesUtil]"
 
+    private val locationProxyPackages = setOf(
+        "com.android.location.fused",
+        "com.google.android.gms"
+    )
+
     private val preferences: XSharedPreferences = XSharedPreferences(MANAGER_APP_PACKAGE_NAME, SHARED_PREFS_FILE).apply {
         makeWorldReadable()
         reload()
@@ -117,8 +122,9 @@ object PreferencesUtil {
         if (packageName.isNullOrBlank() || packageName == MANAGER_APP_PACKAGE_NAME) return false
         if (getIsPlaying() != true || getLastClickedLocation() == null) return false
 
-        if (!getUseInAppTargetApps()) return true
-        return getTargetApps().contains(packageName)
+        val targetApps = getTargetApps()
+        return targetApps.contains(packageName) ||
+            (targetApps.isNotEmpty() && locationProxyPackages.contains(packageName))
     }
 
     private inline fun <reified T> getPreference(key: String): T? {

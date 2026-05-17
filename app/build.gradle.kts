@@ -12,7 +12,7 @@ android {
         applicationId = "com.noobexon.xposedfakelocation"
         minSdk = 30
         targetSdk = 34
-        versionCode = 8
+        versionCode = 1
         versionName = "0.0.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

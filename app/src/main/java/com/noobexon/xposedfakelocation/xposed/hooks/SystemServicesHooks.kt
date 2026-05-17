@@ -22,6 +22,7 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
     fun initHooks() {
         val classLoader = appLpparam.classLoader
         hookLastLocation(classLoader)
+        hookCurrentLocation(classLoader)
         hookLocationDispatch(classLoader)
         hookMiuiLocationServices(classLoader)
         hookWifiServices(classLoader)
@@ -44,6 +45,23 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
                 val original = param.result as? Location
                 param.result = LocationUtil.createFakeLocation(original)
                 XposedBridge.log("$tag Replaced getLastLocation result.")
+            }
+        })
+    }
+
+    private fun hookCurrentLocation(classLoader: ClassLoader) {
+        val serviceClass = findClass(
+            classLoader,
+            "com.android.server.location.LocationManagerService",
+            "com.android.server.LocationManagerService"
+        ) ?: return
+
+        hookAll(serviceClass, "getCurrentLocation", object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                if (!shouldSpoofArgs(param.args)) return
+
+                param.result = defaultReturnValue(param.method as? Method)
+                XposedBridge.log("$tag Blocked getCurrentLocation request for spoofed target.")
             }
         })
     }
@@ -77,11 +95,12 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
 
                 registrations.forEach { (key, value) ->
                     originalRegistrations[key] = value
-                    val packageName = extractPackageName(value)
-                    if (LocationUtil.shouldSpoofPackage(packageName)) {
+                    val packageNames = collectPackageNames(value)
+                    val spoofedPackage = packageNames.firstOrNull(LocationUtil::shouldSpoofPackage)
+                    if (spoofedPackage != null) {
                         locationsField.set(locationResult, arrayListOf(fakeLocation))
                         deliverLocationToRegistration(value, locationResult)
-                        XposedBridge.log("$tag Delivered spoofed provider location to $packageName.")
+                        XposedBridge.log("$tag Delivered spoofed provider location to $spoofedPackage.")
                     } else {
                         passthroughRegistrations[key] = value
                     }
@@ -156,7 +175,7 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
 
         hookAll(receiverClass, "callLocationChangedLocked", object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                if (!LocationUtil.shouldSpoofPackage(extractPackageName(param.thisObject))) return
+                if (collectPackageNames(param.thisObject).none(LocationUtil::shouldSpoofPackage)) return
 
                 val locationArgIndex = param.args.indexOfFirst { it is Location }
                 if (locationArgIndex == -1) return
@@ -333,25 +352,127 @@ class SystemServicesHooks(val appLpparam: LoadPackageParam) {
 
     private fun shouldSpoofArgs(args: Array<Any?>?): Boolean {
         return args?.asSequence()
-            ?.mapNotNull(::extractPackageName)
+            ?.flatMap { collectPackageNames(it).asSequence() }
+            ?.distinct()
             ?.any(LocationUtil::shouldSpoofPackage) == true
     }
 
-    private fun extractPackageName(value: Any?): String? {
-        if (value == null) return null
-        if (value is String) return value.takeIf(::looksLikePackageName)
+    private fun collectPackageNames(value: Any?): Set<String> {
+        return collectPackageNames(value, mutableSetOf(), 0)
+    }
 
-        listOf("mPackageName", "packageName", "callingPackage", "mCallingPackage").forEach { fieldName ->
+    private fun collectPackageNames(value: Any?, visited: MutableSet<Int>, depth: Int): Set<String> {
+        if (value == null || depth > 5) return emptySet()
+        if (value is String) return setOfNotNull(value.takeIf(::looksLikePackageName))
+
+        val identity = System.identityHashCode(value)
+        if (!visited.add(identity)) return emptySet()
+
+        val packageNames = linkedSetOf<String>()
+
+        if (value is Iterable<*>) {
+            value.forEach { packageNames += collectPackageNames(it, visited, depth + 1) }
+            return packageNames
+        }
+
+        if (value is Map<*, *>) {
+            value.forEach { (key, mapValue) ->
+                packageNames += collectPackageNames(key, visited, depth + 1)
+                packageNames += collectPackageNames(mapValue, visited, depth + 1)
+            }
+            return packageNames
+        }
+
+        packageNames += collectWorkSourcePackageNames(value)
+
+        listOf(
+            "mPackageName",
+            "packageName",
+            "callingPackage",
+            "mCallingPackage",
+            "mCallerPackageName",
+            "callerPackageName",
+            "mOpPackageName",
+            "opPackageName"
+        ).forEach { fieldName ->
             val packageName = findField(value.javaClass, fieldName)?.get(value) as? String
-            if (looksLikePackageName(packageName)) return packageName
+            packageName?.takeIf(::looksLikePackageName)?.let(packageNames::add)
         }
 
-        listOf("mIdentity", "mCallerIdentity", "callerIdentity", "identity").forEach { fieldName ->
-            val packageName = extractPackageName(findField(value.javaClass, fieldName)?.get(value))
-            if (packageName != null) return packageName
+        listOf(
+            "getPackageName",
+            "getCallingPackage",
+            "getCallerPackageName",
+            "getOpPackageName"
+        ).forEach { methodName ->
+            val packageName = runCatching {
+                findMethod(value.javaClass, methodName)?.invoke(value) as? String
+            }.getOrNull()
+            packageName?.takeIf(::looksLikePackageName)?.let(packageNames::add)
         }
 
-        return null
+        listOf(
+            "mIdentity",
+            "mCallerIdentity",
+            "callerIdentity",
+            "identity",
+            "mCallingIdentity",
+            "callingIdentity",
+            "mAttributionSource",
+            "attributionSource",
+            "mNext",
+            "next",
+            "mWorkSource",
+            "workSource",
+            "mRequest",
+            "request",
+            "mLocationRequest",
+            "locationRequest"
+        ).forEach { fieldName ->
+            packageNames += collectPackageNames(findField(value.javaClass, fieldName)?.get(value), visited, depth + 1)
+        }
+
+        listOf("getAttributionSource", "getNext", "getWorkSource", "getLocationRequest").forEach { methodName ->
+            val nestedValue = runCatching {
+                findMethod(value.javaClass, methodName)?.invoke(value)
+            }.getOrNull()
+            packageNames += collectPackageNames(nestedValue, visited, depth + 1)
+        }
+
+        return packageNames
+    }
+
+    private fun collectWorkSourcePackageNames(value: Any): Set<String> {
+        if (value.javaClass.name != "android.os.WorkSource") return emptySet()
+
+        val packageNames = linkedSetOf<String>()
+        val size = runCatching {
+            findMethod(value.javaClass, "size")?.invoke(value) as? Int
+        }.getOrNull() ?: return emptySet()
+
+        repeat(size) { index ->
+            val name = runCatching {
+                findMethod(value.javaClass, "getName", Integer.TYPE)?.invoke(value, index) as? String
+            }.getOrNull()
+            name?.takeIf(::looksLikePackageName)?.let(packageNames::add)
+        }
+
+        return packageNames
+    }
+
+    private fun findMethod(clazz: Class<*>, methodName: String, vararg parameterTypes: Class<*>): Method? {
+        var currentClass: Class<*>? = clazz
+        while (currentClass != null) {
+            try {
+                return currentClass.getDeclaredMethod(methodName, *parameterTypes).apply { isAccessible = true }
+            } catch (_: NoSuchMethodException) {
+                currentClass = currentClass.superclass
+            }
+        }
+
+        return clazz.methods.firstOrNull {
+            it.name == methodName && it.parameterTypes.contentEquals(parameterTypes)
+        }?.apply { isAccessible = true }
     }
 
     private fun looksLikePackageName(value: String?): Boolean {
