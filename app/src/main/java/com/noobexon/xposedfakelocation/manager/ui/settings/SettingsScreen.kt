@@ -1,6 +1,8 @@
 //SettingsScreen.kt
 package com.noobexon.xposedfakelocation.manager.ui.settings
 
+import android.content.ComponentName
+import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -13,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.compose.runtime.*
@@ -26,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import com.noobexon.xposedfakelocation.manager.control.ControlReceiver
 
 // Dimension constants
 private object Dimensions {
@@ -172,10 +176,29 @@ fun SettingsScreen(
     settingsViewModel: SettingsViewModel = viewModel ()
 ) {
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     val scrollState = rememberScrollState()
+    var showRebootDialog by remember { mutableStateOf(false) }
 
     // Get settings from the definition object
     val allSettings = SettingDefinitions.getSettings(settingsViewModel)
+
+    if (showRebootDialog) {
+        AlertDialog(
+            onDismissRequest = { showRebootDialog = false },
+            title = { Text("Reboot required") },
+            text = {
+                Text(
+                    "You just enabled 'Use built-in target app selection'. The system_server and com.android.phone hooks can only be installed at boot, so a full device reboot is required for this change to take effect. Per-app hooks are unaffected and pick up changes on the next app launch."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showRebootDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -214,7 +237,72 @@ fun SettingsScreen(
                     .verticalScroll(scrollState)
             ) {
                 Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
-                
+
+                CategoryHeader("Notifications")
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.SPACING_SMALL),
+                    shape = RoundedCornerShape(Dimensions.CARD_CORNER_RADIUS),
+                    elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
+                ) {
+                    Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
+                        BooleanSettingItem(
+                            title = "Hide 'Fake location active' toast",
+                            description = "Suppresses the toast shown when the module activates in a target app",
+                            checked = settingsViewModel.hideFakeLocationToast.collectAsState().value,
+                            onCheckedChange = settingsViewModel::setHideFakeLocationToast
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
+
+                CategoryHeader("Target Apps")
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.SPACING_SMALL),
+                    shape = RoundedCornerShape(Dimensions.CARD_CORNER_RADIUS),
+                    elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
+                ) {
+                    Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
+                        BooleanSettingItem(
+                            title = "Use built-in target app selection",
+                            description = "On (default): target apps are picked in the in-app 'Target Apps' screen; LSPosed scope only needs 'android' and 'com.android.phone'. Off: the in-app list is ignored and the system-server / phone hooks are skipped — pick target apps directly in LSPosed scope (pre-v0.0.7 behavior). A reboot is only required when enabling this option, so the system_server and com.android.phone hooks can be installed at boot. Switching back to the LSPosed-scope-only method, or any per-app target-list change, takes effect at the next app launch — no reboot needed.",
+                            checked = settingsViewModel.useInAppTargetApps.collectAsState().value,
+                            onCheckedChange = { newValue ->
+                                settingsViewModel.setUseInAppTargetApps(newValue)
+                                if (newValue) {
+                                    showRebootDialog = true
+                                }
+                            }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
+
+                CategoryHeader("External Control")
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.SPACING_SMALL),
+                    shape = RoundedCornerShape(Dimensions.CARD_CORNER_RADIUS),
+                    elevation = CardDefaults.cardElevation(defaultElevation = Dimensions.CARD_ELEVATION)
+                ) {
+                    Column(modifier = Modifier.padding(Dimensions.SPACING_SMALL)) {
+                        BooleanSettingItem(
+                            title = "Allow external broadcast control",
+                            description = "Off (default): blocks the BroadcastReceiver — no app or ADB shell can start/stop spoofing or set coordinates via intents. On: any installed app and 'adb shell am broadcast' can drive the module (no permission check; coordinates are clamped to valid lat/lon ranges). Only enable this if you trust every app on the device or are running on a controlled (e.g., automation) device. See docs/EXTERNAL_CONTROL.md for actions and lock-down options.",
+                            checked = settingsViewModel.enableBroadcastControl.collectAsState().value,
+                            onCheckedChange = { newValue ->
+                                settingsViewModel.setEnableBroadcastControl(newValue)
+                                setControlReceiverEnabled(context, newValue)
+                            }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(Dimensions.SPACING_MEDIUM))
+
                 // Display settings by category
                 SettingDefinitions.CATEGORIES.forEach { (category, settingsInCategory) ->
                     CategoryHeader(category)
@@ -259,6 +347,20 @@ fun SettingsScreen(
     }
 }
 
+private fun setControlReceiverEnabled(context: android.content.Context, enabled: Boolean) {
+    val component = ComponentName(context, ControlReceiver::class.java)
+    val newState = if (enabled) {
+        PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+    } else {
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+    }
+    context.packageManager.setComponentEnabledSetting(
+        component,
+        newState,
+        PackageManager.DONT_KILL_APP
+    )
+}
+
 @Composable
 fun CategoryHeader(title: String) {
     Row(
@@ -281,6 +383,73 @@ fun CategoryHeader(title: String) {
                 .padding(start = Dimensions.SPACING_MEDIUM),
             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         )
+    }
+}
+
+@Composable
+fun BooleanSettingItem(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    var showTooltip by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(Dimensions.SPACING_SMALL)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+
+                    IconButton(
+                        onClick = { showTooltip = !showTooltip },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "More information about $title",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                if (showTooltip) {
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = Dimensions.SPACING_EXTRA_SMALL)
+                    )
+                }
+            }
+
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                modifier = Modifier.semantics {
+                    contentDescription = if (checked) "Disable $title" else "Enable $title"
+                }
+            )
+        }
     }
 }
 

@@ -42,6 +42,7 @@
 - **User-Friendly Interface**: Modern Material Design 3 UI built with Jetpack Compose.
 - **Intuitive Navigation**: Easy access to maps, favorite locations, and settings.
 - **Community Integration**: Direct links to Telegram, Discord, and GitHub communities.
+- **Headless Mode (External Intent Control)**: Optional, off by default — once enabled in Settings, you can start/stop spoofing and set the active fake location from another app or `adb shell` via broadcast intents, no need to open the UI. See [`docs/EXTERNAL_CONTROL.md`](docs/EXTERNAL_CONTROL.md).
 
 ---
 
@@ -90,6 +91,8 @@ You can always install the latest stable version from the releases page. If you 
    - Reboot your device to apply the scope change.
    - Select target apps inside XposedFakeLocation instead of selecting each target app in LSPosed.
 
+   **Alternative (pre-v0.0.7 behavior):** If the in-app target selector does not work for you, open **Settings** inside XposedFakeLocation and turn **"Use built-in target app selection"** OFF. In that mode the in-app list is ignored and the `android` / `com.android.phone` system-wide hooks are skipped at boot. You then pick target apps directly in **LSPosed scope** (just like in v0.0.6) — add each target app to the module's scope there, remove `android` and `com.android.phone` if you no longer need them. Switching from the default ON to OFF takes effect at the next app launch (no reboot needed); switching from OFF back to ON requires a reboot, since the system-server / phone hooks can only be installed at boot.
+
 ---
 
 ## **Usage**
@@ -136,6 +139,54 @@ You can always install the latest stable version from the releases page. If you 
 7. **Stop Spoofing**
 
    - Toggle the **Stop** button to cease location spoofing.
+
+8. **Headless Mode (Optional, off by default)**
+
+   - You can drive XposedFakeLocation entirely from another app or from `adb shell` using broadcast intents — useful for automation or integrating with your own tools. No additional permissions or signing requirements on the caller side.
+   - **First enable it**: open **Settings → External Control → "Allow external broadcast control"**. Until you do, the receiver is disabled at the manifest level and no broadcast can reach it.
+   - ⚠️ **Security note:** when enabled, the broadcast receiver is exported with **no permission check**. Any app installed on the device and `adb shell` can flip play/stop and inject coordinates. Inputs are clamped to valid lat/lon/accuracy ranges, but caller identity is not verified — see [`docs/EXTERNAL_CONTROL.md`](docs/EXTERNAL_CONTROL.md) for how to lock it down further if you need that.
+
+     ```bash
+     # Play / ON: start spoofing using whatever location was last set
+     adb shell am broadcast \
+       -a com.noobexon.xposedfakelocation.action.START \
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver
+
+     # Stop / OFF: stop spoofing
+     adb shell am broadcast \
+       -a com.noobexon.xposedfakelocation.action.STOP \
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver
+
+     # Set the active fake location only (does NOT start spoofing) — example: Berlin
+     adb shell am broadcast \
+       -a com.noobexon.xposedfakelocation.action.SET_LOCATION \
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver \
+       --ed latitude 52.5200 --ed longitude 13.4050
+
+     # Set location and immediately start spoofing — Berlin
+     adb shell am broadcast \
+       -a com.noobexon.xposedfakelocation.action.SET_LOCATION \
+       -n com.noobexon.xposedfakelocation/.manager.control.ControlReceiver \
+       --ed latitude 52.5200 --ed longitude 13.4050 --ez start true
+     ```
+
+   - Full action/extra reference and a Kotlin caller snippet: [`docs/EXTERNAL_CONTROL.md`](docs/EXTERNAL_CONTROL.md).
+
+### **Debugging which mode is active (Xposed log)**
+
+The module logs hook installation and mode via the standard Xposed log (`XposedBridge.log`), which LSPosed surfaces under the module's "Log" entry in its manager. You can also tail it from a shell:
+
+```bash
+adb shell tail -f /data/adb/lspd/log/modules.log | grep MainHook
+```
+
+Sample output:
+
+```
+[MainHook] Mode=IN_APP_TARGET_LIST | Installing system-server location hooks (android).
+[MainHook] Mode=IN_APP_TARGET_LIST | Installing in-process location hooks for com.example.app
+[MainHook] Mode=LSPOSED_SCOPE_ONLY | Skipping system-server hooks (android). Selection is driven solely by LSPosed scope.
+```
 
 ---
 

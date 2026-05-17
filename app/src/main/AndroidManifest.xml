@@ -52,6 +52,23 @@
             android:name="xposedsharedprefs"
             android:value="true" />
 
+        <!--
+            Off by default. The user opts in via Settings → External Control,
+            which calls PackageManager.setComponentEnabledSetting(...) to flip
+            this receiver to ENABLED at runtime. Until then, no external app
+            (and no `adb shell am broadcast`) can reach it.
+        -->
+        <receiver
+            android:name=".manager.control.ControlReceiver"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.noobexon.xposedfakelocation.action.START" />
+                <action android:name="com.noobexon.xposedfakelocation.action.STOP" />
+                <action android:name="com.noobexon.xposedfakelocation.action.SET_LOCATION" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

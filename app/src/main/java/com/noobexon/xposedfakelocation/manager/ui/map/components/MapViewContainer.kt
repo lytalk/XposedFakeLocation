@@ -1,7 +1,12 @@
 package com.noobexon.xposedfakelocation.manager.ui.map.components
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -105,6 +110,7 @@ private fun rememberMapView(context: Context): MapView {
             setTileSource(TileSourceFactory.MAPNIK)
             setBuiltInZoomControls(false)
             setMultiTouchControls(true)
+            controller.setZoom(DEFAULT_MAP_ZOOM)
         }
     }
 }
@@ -233,11 +239,15 @@ private fun CenterMapOnUserLocation(
     lastClickedLocation: GeoPoint?,
     mapZoom: Double?
 ) {
+    val context = LocalContext.current
     LaunchedEffect(mapView, lastClickedLocation) {
         if (lastClickedLocation != null) {
             centerOnMarkerLocation(mapView, lastClickedLocation, mapZoom, mapViewModel)
         } else {
-            if (!tryToFindAndCenterUserLocation(mapView, locationOverlay, mapViewModel)) {
+            val lastKnown = getLastKnownDeviceLocation(context)
+            if (lastKnown != null) {
+                centerOnGeoPoint(mapView, lastKnown, mapViewModel)
+            } else if (!tryToFindAndCenterUserLocation(mapView, locationOverlay, mapViewModel)) {
                 centerOnDefaultLocation(mapView, mapViewModel)
             }
         }
@@ -253,11 +263,50 @@ private suspend fun centerOnMarkerLocation(
     mapZoom: Double?,
     mapViewModel: MapViewModel
 ) {
-    // If marker exists, center on it using stored zoom level
-    val zoom = mapZoom ?: mapView.zoomLevelDouble
+    val zoom = mapZoom ?: DEFAULT_MAP_ZOOM
     mapView.controller.setZoom(zoom)
     mapView.controller.animateTo(markerLocation)
+    mapViewModel.updateMapZoom(zoom)
     mapViewModel.setLoadingFinished()
+}
+
+private fun centerOnGeoPoint(
+    mapView: MapView,
+    point: GeoPoint,
+    mapViewModel: MapViewModel
+) {
+    mapView.controller.setZoom(DEFAULT_MAP_ZOOM)
+    mapView.controller.setCenter(point)
+    mapViewModel.updateUserLocation(point)
+    mapViewModel.updateMapZoom(DEFAULT_MAP_ZOOM)
+    mapViewModel.setLoadingFinished()
+}
+
+private fun getLastKnownDeviceLocation(context: Context): GeoPoint? {
+    val granted = ContextCompat.checkSelfPermission(
+        context, Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED ||
+        ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    if (!granted) return null
+
+    val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return null
+    val providers = try {
+        lm.getProviders(true)
+    } catch (e: SecurityException) {
+        return null
+    }
+    var best: Location? = null
+    for (provider in providers) {
+        val loc = try {
+            lm.getLastKnownLocation(provider)
+        } catch (e: SecurityException) {
+            null
+        } ?: continue
+        if (best == null || loc.time > best.time) best = loc
+    }
+    return best?.let { GeoPoint(it.latitude, it.longitude) }
 }
 
 /**

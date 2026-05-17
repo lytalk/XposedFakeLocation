@@ -57,6 +57,9 @@ class PreferencesRepository(private val context: Context) {
         val SPEED_ACCURACY = floatPreferencesKey(KEY_SPEED_ACCURACY)
         val FAVORITES = stringPreferencesKey(KEY_FAVORITES)
         val TARGET_APPS = stringPreferencesKey(KEY_TARGET_APPS)
+        val HIDE_FAKE_LOCATION_TOAST = booleanPreferencesKey(KEY_HIDE_FAKE_LOCATION_TOAST)
+        val USE_INAPP_TARGET_APPS = booleanPreferencesKey(KEY_USE_INAPP_TARGET_APPS)
+        val ENABLE_BROADCAST_CONTROL = booleanPreferencesKey(KEY_ENABLE_BROADCAST_CONTROL)
     }
 
     // Generic helper for DataStore flows with error handling
@@ -527,5 +530,37 @@ class PreferencesRepository(private val context: Context) {
     // For backward compatibility
     fun getSpeedAccuracy(): Float {
         return sharedPrefs.getFloat(KEY_SPEED_ACCURACY, DEFAULT_SPEED_ACCURACY)
+    }
+
+    // Hide Fake Location Toast
+    fun getHideFakeLocationToastFlow(): Flow<Boolean> {
+        return getPreferenceFlow(PreferenceKeys.HIDE_FAKE_LOCATION_TOAST, DEFAULT_HIDE_FAKE_LOCATION_TOAST)
+    }
+
+    suspend fun saveHideFakeLocationToast(hideFakeLocationToast: Boolean) {
+        savePreference(PreferenceKeys.HIDE_FAKE_LOCATION_TOAST, hideFakeLocationToast, KEY_HIDE_FAKE_LOCATION_TOAST, hideFakeLocationToast)
+    }
+
+    // For backward compatibility
+    fun getHideFakeLocationToast(): Boolean {
+        return sharedPrefs.getBoolean(KEY_HIDE_FAKE_LOCATION_TOAST, DEFAULT_HIDE_FAKE_LOCATION_TOAST)
+    }
+
+    // Use In-App Target Apps Selection
+    fun getUseInAppTargetAppsFlow(): Flow<Boolean> {
+        return getPreferenceFlow(PreferenceKeys.USE_INAPP_TARGET_APPS, DEFAULT_USE_INAPP_TARGET_APPS)
+    }
+
+    suspend fun saveUseInAppTargetApps(useInAppTargetApps: Boolean) {
+        savePreference(PreferenceKeys.USE_INAPP_TARGET_APPS, useInAppTargetApps, KEY_USE_INAPP_TARGET_APPS, useInAppTargetApps)
+    }
+
+    // Enable Broadcast Control Receiver
+    fun getEnableBroadcastControlFlow(): Flow<Boolean> {
+        return getPreferenceFlow(PreferenceKeys.ENABLE_BROADCAST_CONTROL, DEFAULT_ENABLE_BROADCAST_CONTROL)
+    }
+
+    suspend fun saveEnableBroadcastControl(enable: Boolean) {
+        savePreference(PreferenceKeys.ENABLE_BROADCAST_CONTROL, enable, KEY_ENABLE_BROADCAST_CONTROL, enable)
     }
 }
