@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.noobexon.xposedfakelocation.BuildConfig
 import compose.icons.LineAwesomeIcons
 import compose.icons.lineawesomeicons.*
 import com.noobexon.xposedfakelocation.manager.ui.navigation.Screen
@@ -162,7 +163,7 @@ fun DrawerContent(
             Spacer(modifier = Modifier.weight(1f))
             
             Text(
-                text = "Version 1.0",
+                text = "Version ${BuildConfig.VERSION_NAME}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 modifier = Modifier
