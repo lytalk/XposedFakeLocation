@@ -59,6 +59,7 @@ class PreferencesRepository(private val context: Context) {
         val TARGET_APPS = stringPreferencesKey(KEY_TARGET_APPS)
         val HIDE_FAKE_LOCATION_TOAST = booleanPreferencesKey(KEY_HIDE_FAKE_LOCATION_TOAST)
         val USE_INAPP_TARGET_APPS = booleanPreferencesKey(KEY_USE_INAPP_TARGET_APPS)
+        val ENABLE_BROADCAST_CONTROL = booleanPreferencesKey(KEY_ENABLE_BROADCAST_CONTROL)
     }
 
     // Generic helper for DataStore flows with error handling
@@ -552,5 +553,14 @@ class PreferencesRepository(private val context: Context) {
 
     suspend fun saveUseInAppTargetApps(useInAppTargetApps: Boolean) {
         savePreference(PreferenceKeys.USE_INAPP_TARGET_APPS, useInAppTargetApps, KEY_USE_INAPP_TARGET_APPS, useInAppTargetApps)
+    }
+
+    // Enable Broadcast Control Receiver
+    fun getEnableBroadcastControlFlow(): Flow<Boolean> {
+        return getPreferenceFlow(PreferenceKeys.ENABLE_BROADCAST_CONTROL, DEFAULT_ENABLE_BROADCAST_CONTROL)
+    }
+
+    suspend fun saveEnableBroadcastControl(enable: Boolean) {
+        savePreference(PreferenceKeys.ENABLE_BROADCAST_CONTROL, enable, KEY_ENABLE_BROADCAST_CONTROL, enable)
     }
 }

@@ -248,6 +248,15 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     )
     val useInAppTargetApps: StateFlow<Boolean> = _useInAppTargetAppsPreference.state
 
+    // Preference for External Broadcast Control
+    private val _enableBroadcastControlPreference = BooleanPreference(
+        DEFAULT_ENABLE_BROADCAST_CONTROL,
+        preferencesRepository.getEnableBroadcastControlFlow(),
+        preferencesRepository::saveEnableBroadcastControl,
+        viewModelScope
+    )
+    val enableBroadcastControl: StateFlow<Boolean> = _enableBroadcastControlPreference.state
+
     // Setter methods for all preferences
     fun setUseAccuracy(value: Boolean) = _useAccuracyPreference.setValue(value)
     fun setAccuracy(value: Double) = _accuracyPreference.setValue(value)
@@ -267,4 +276,5 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setSpeedAccuracy(value: Float) = _speedAccuracyPreference.setValue(value)
     fun setHideFakeLocationToast(value: Boolean) = _hideFakeLocationToastPreference.setValue(value)
     fun setUseInAppTargetApps(value: Boolean) = _useInAppTargetAppsPreference.setValue(value)
+    fun setEnableBroadcastControl(value: Boolean) = _enableBroadcastControlPreference.setValue(value)
 }

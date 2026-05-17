@@ -1,7 +1,6 @@
 // PreferencesUtil.kt
 package com.noobexon.xposedfakelocation.xposed.utils
 
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.noobexon.xposedfakelocation.data.*
@@ -11,10 +10,6 @@ import de.robv.android.xposed.XposedBridge
 
 object PreferencesUtil {
     private const val TAG = "[PreferencesUtil]"
-
-    // Per-process memo so spoof-decision logs don't spam logcat on hot location-query paths.
-    // Bounded by (|installed packages| × small set of reasons); not a leak.
-    private val loggedDecisions: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
 
     private val preferences: XSharedPreferences = XSharedPreferences(MANAGER_APP_PACKAGE_NAME, SHARED_PREFS_FILE).apply {
         makeWorldReadable()
@@ -122,31 +117,8 @@ object PreferencesUtil {
         if (packageName.isNullOrBlank() || packageName == MANAGER_APP_PACKAGE_NAME) return false
         if (getIsPlaying() != true || getLastClickedLocation() == null) return false
 
-        val useInApp = getUseInAppTargetApps()
-        val decision: Boolean
-        val reason: String
-        if (!useInApp) {
-            decision = true
-            reason = "mode=LSPOSED_SCOPE_ONLY (any package reaching this hook is in scope)"
-        } else {
-            val targetApps = getTargetApps()
-            decision = targetApps.contains(packageName)
-            reason = if (decision) "mode=IN_APP_TARGET_LIST hit" else "mode=IN_APP_TARGET_LIST miss (targetApps=${targetApps.size})"
-        }
-        logDecisionOnce(packageName, decision, reason)
-        return decision
-    }
-
-    private fun logDecisionOnce(packageName: String, decision: Boolean, reason: String) {
-        val key = "$packageName:$decision:$reason"
-        if (loggedDecisions.add(key)) {
-            val msg = "shouldSpoofPackage($packageName) -> $decision ; $reason"
-            XposedBridge.log("$TAG $msg")
-            try {
-                Log.i(LOGCAT_TAG, msg)
-            } catch (_: Throwable) {
-            }
-        }
+        if (!getUseInAppTargetApps()) return true
+        return getTargetApps().contains(packageName)
     }
 
     private inline fun <reified T> getPreference(key: String): T? {

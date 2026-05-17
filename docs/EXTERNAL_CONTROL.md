@@ -1,16 +1,26 @@
 # External Intent Control
 
-XposedFakeLocation exposes a `BroadcastReceiver` that lets any app on the device — or `adb shell` — control faking headlessly: start it, stop it, and update the fake coordinates without opening the XposedFakeLocation UI.
+XposedFakeLocation can expose a `BroadcastReceiver` that lets any app on the device — or `adb shell` — control faking headlessly: start it, stop it, and update the fake coordinates without opening the XposedFakeLocation UI.
 
-## Security model — please read
+## Disabled by default — opt in via Settings
 
-**None. The receiver is fully open.** It is declared with `android:exported="true"` and **no `android:permission`** in the manifest. There is no caller check inside `ControlReceiver.onReceive` either. Consequences:
+The receiver is declared in the manifest with `android:enabled="false"`, so out of the box **no broadcast can reach it**. To turn it on:
+
+> **Settings → External Control → "Allow external broadcast control"** (default: off)
+
+Toggling this on calls `PackageManager.setComponentEnabledSetting(...)` to flip the component to `ENABLED` at runtime. Turning it off again disables the component immediately — no reboot needed.
+
+## Security model — please read before enabling
+
+When the toggle is **on**, the receiver is declared with `android:exported="true"` and **no `android:permission`**, and there is no caller check inside `ControlReceiver.onReceive`. Consequences:
 
 - **Any app installed on the device** — regardless of signing key, target SDK, or requested permissions — can send these broadcasts and toggle spoofing or inject coordinates.
 - **`adb shell` works too** (useful for automation and CI).
-- A malicious or buggy app could silently start/stop spoofing or move your fake location while a target app is running. If your threat model cares about that, do not enable this build.
+- A malicious or buggy app could silently start/stop spoofing or move your fake location while a target app is running. If your threat model cares about that, keep the toggle off.
 
-This is **intentional** for this fork: the primary use case is driving the module from a separate automation app signed with a different key. If you want to lock it down, re-introduce a custom `<permission android:protectionLevel="signature">` in the manifest, add `android:permission="..."` to the `<receiver>`, and re-add an authorization check in `ControlReceiver.onReceive` (`checkCallingOrSelfPermission` or a UID comparison).
+This is **intentional** for this fork: the primary use case is driving the module from a separate automation app signed with a different key. Inputs are still sanitized — latitude is clamped to `[-90, 90]`, longitude to `[-180, 180]`, and accuracy must be finite and within `[0, 100000]` meters; out-of-range values are rejected.
+
+If you want to lock it down further, re-introduce a custom `<permission android:protectionLevel="signature">` in the manifest, add `android:permission="..."` to the `<receiver>`, and re-add an authorization check in `ControlReceiver.onReceive` (`checkCallingOrSelfPermission` or a UID comparison).
 
 ## Actions and extras
 

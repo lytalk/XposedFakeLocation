@@ -4,7 +4,6 @@ package com.noobexon.xposedfakelocation.data
 // APP
 const val MANAGER_APP_PACKAGE_NAME = "com.noobexon.xposedfakelocation"
 const val SHARED_PREFS_FILE = "xposed_shared_prefs"
-const val LOGCAT_TAG = "XposedFakeLocation"
 
 // KEYS
 const val KEY_IS_PLAYING = "is_playing"
@@ -42,6 +41,8 @@ const val KEY_HIDE_FAKE_LOCATION_TOAST = "hide_fake_location_toast"
 
 const val KEY_USE_INAPP_TARGET_APPS = "use_inapp_target_apps"
 
+const val KEY_ENABLE_BROADCAST_CONTROL = "enable_broadcast_control"
+
  // DEFAULT VALUES
 const val DEFAULT_USE_ACCURACY = false
 const val DEFAULT_ACCURACY = 0.0
@@ -70,6 +71,8 @@ const val DEFAULT_SPEED_ACCURACY = 0.0f
 const val DEFAULT_HIDE_FAKE_LOCATION_TOAST = false
 
 const val DEFAULT_USE_INAPP_TARGET_APPS = true
+
+const val DEFAULT_ENABLE_BROADCAST_CONTROL = false
 
 // MATH & PHYS
 const val PI = 3.14159265359
